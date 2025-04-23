@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "588992637491",
+    "project_id": "kairoscopeapp-2defa",
+    "storage_bucket": "kairoscopeapp-2defa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:588992637491:android:45dc324d5c2ce2b78fd146",
+        "android_client_info": {
+          "package_name": "com.lmr.kairoscope"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-k51FPZhUUt_J3rbSCTdB8Y20RKiPI4s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

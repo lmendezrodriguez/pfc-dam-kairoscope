@@ -185,6 +185,7 @@ captures/
 secrets.properties
 secrets.xml
 
+
 # Sensitive configuration (adjust as needed)
 # config.properties
 
@@ -215,6 +216,6 @@ nbproject/
 
 # Firebase Admin SDK key (NEVER commit this)
 # serviceAccountKey.json # Or whatever you name it
-
+google-services.json
 # Large data files (if any) in knowledge_base that are not code
 # knowledge_base/large_corpus.pdf
