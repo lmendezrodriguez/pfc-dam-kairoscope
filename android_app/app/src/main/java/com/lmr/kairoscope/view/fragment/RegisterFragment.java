@@ -1,66 +1,201 @@
+// android_app/app/src/main/java/com/lmr/kairoscope/view/fragment/RegisterFragment.java
+// (ASEGÚRATE de que el nombre del paquete aquí arriba coincide con la ubicación real del archivo)
+
 package com.lmr.kairoscope.view.fragment;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.util.Log; // Importa la clase Log para los mensajes de depuración
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button; // MaterialButton hereda de Button
+import android.widget.ProgressBar; // CircularProgressIndicator hereda de ProgressBar
 
-import com.lmr.kairoscope.R;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link RegisterFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar; // Importa Snackbar
+import com.google.android.material.textfield.TextInputEditText; // Importa TextInputEditText
+import com.google.android.material.progressindicator.CircularProgressIndicator; // Importa CircularProgressIndicator
+
+import com.lmr.kairoscope.R; // Importa la clase R para referenciar recursos
+import com.lmr.kairoscope.data.repository.AuthRepository; // Importa tu Repository (para Factory)
+import com.lmr.kairoscope.viewmodel.AuthViewModel; // Importa tu ViewModel
+
+
 public class RegisterFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    // Referencias a los elementos UI del layout (variables de instancia)
+    private TextInputEditText editTextName; // Campo de Nombre
+    private TextInputEditText editTextEmail;
+    private TextInputEditText editTextPassword;
+    private MaterialButton buttonRegister; // Botón de Registrarse
+    private MaterialButton buttonLogin; // Botón para ir a Iniciar Sesión
+    private CircularProgressIndicator progressBar;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    // Referencia al ViewModel
+    private AuthViewModel authViewModel;
 
-    public RegisterFragment() {
-        // Required empty public constructor
-    }
+    // Referencia al NavController
+    private NavController navController;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment RegisterFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static RegisterFragment newInstance(String param1, String param2) {
-        RegisterFragment fragment = new RegisterFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
+    // Etiqueta para los logs de depuración
+    private static final String TAG = "RegisterFragment";
+
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // Inflar el layout para este fragmento
+        View view = inflater.inflate(R.layout.fragment_register, container, false);
+
+        // Obtener referencias a los elementos UI usando findViewById
+        editTextName = view.findViewById(R.id.editTextName); // Obtener referencia al campo Nombre
+        editTextEmail = view.findViewById(R.id.editTextEmail);
+        editTextPassword = view.findViewById(R.id.editTextPassword);
+        buttonRegister = view.findViewById(R.id.buttonRegister); // Obtener referencia al botón de Registrarse
+        buttonLogin = view.findViewById(R.id.buttonLogin); // Obtener referencia al botón para ir a Login
+        progressBar = view.findViewById(R.id.progressBar);
+
+        // Devuelve la vista inflada. La configuración de ViewModel y observers se hará en onViewCreated.
+        return view;
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Obtener la instancia del NavController para navegar
+        navController = NavHostFragment.findNavController(this);
+
+        // Obtener la instancia del ViewModel usando el Factory.
+        // Instanciamos el Repository aquí. En un proyecto más grande, usarías Inyección de Dependencias.
+        AuthRepository authRepository = new AuthRepository();
+        authViewModel = new ViewModelProvider(this, new AuthViewModel.Factory(authRepository)).get(AuthViewModel.class);
+
+
+        // --- Observar LiveData del ViewModel (Misma lógica que en LoginFragment) ---
+
+        // Observar el estado de carga para mostrar/ocultar el ProgressBar y deshabilitar UI
+        authViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            Log.d(TAG, "isLoading updated: " + isLoading);
+
+            if (isLoading) {
+                progressBar.setVisibility(View.VISIBLE);
+                // Deshabilitar interacción UI durante la carga
+                buttonRegister.setEnabled(false);
+                buttonLogin.setEnabled(false);
+                editTextName.setEnabled(false); // Deshabilitar campo Nombre
+                editTextEmail.setEnabled(false);
+                editTextPassword.setEnabled(false);
+            } else {
+                progressBar.setVisibility(View.GONE); // Oculta la barra de carga
+                // Habilitar interacción UI una vez terminada la carga
+                buttonRegister.setEnabled(true);
+                buttonLogin.setEnabled(true);
+                editTextName.setEnabled(true); // Habilitar campo Nombre
+                editTextEmail.setEnabled(true);
+                editTextPassword.setEnabled(true);
+            }
+        });
+
+        // Observar los mensajes del ViewModel para mostrarlos en un Snackbar
+        authViewModel.getMessage().observe(getViewLifecycleOwner(), message -> {
+            Log.d(TAG, "Message received: " + message);
+
+            if (message != null && !message.isEmpty()) {
+                Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show();
+                // authViewModel.clearMessage(); // Llama a este método si lo implementaste en AuthViewModel
+            }
+        });
+
+        // Observar el estado de autenticación para navegar si el usuario está logueado (registro exitoso)
+        authViewModel.isAuthenticated().observe(getViewLifecycleOwner(), isAuthenticated -> {
+            Log.d(TAG, "isAuthenticated updated: " + isAuthenticated);
+
+            if (isAuthenticated != null && isAuthenticated) {
+                // El usuario está autenticado (registro exitoso y logueo automático).
+                // Navegar a la pantalla principal (DeckListFragment).
+                try {
+                    // *** IMPORTANTE: Asegúrate que R.id.action_registerFragment_to_deckListFragment es el ID correcto en tu nav_graph.xml ***
+                    navController.navigate(R.id.action_registerFragment_to_deckListFragment);
+                } catch (IllegalArgumentException e) {
+                    Log.e(TAG, "Navigation error to DeckList after registration: " + e.getMessage());
+                }
+            }
+            // Si isAuthenticated es false, el registro falló o el usuario no está logueado, permanecemos en esta pantalla.
+        });
+
+        // Observar authResult (Opcional: similar a LoginFragment)
+        authViewModel.getAuthResult().observe(getViewLifecycleOwner(), result -> {
+            Log.d(TAG, "AuthResult received: " + (result != null ? "Success: " + result.isSuccess() + ", Error: " + result.getErrorMessage() : "null"));
+            // La lógica para manejar el resultado (mostrar mensajes, cambiar isLoading, navegar si es éxito)
+            // ya está delegada a los otros observers (message, isLoading, isAuthenticated).
+            // Puedes añadir lógica adicional aquí si la necesitas.
+        });
+
+
+        // --- Configurar Click Listeners ---
+
+        // Click Listener para el botón de Registrarse
+        buttonRegister.setOnClickListener(v -> {
+            String name = editTextName.getText().toString().trim(); // Obtener el nombre
+            String email = editTextEmail.getText().toString().trim();
+            String password = editTextPassword.getText().toString().trim();
+
+            // Validación básica de campos (que no estén vacíos)
+            if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                Snackbar.make(requireView(), "Por favor, completa todos los campos (Nombre, Email, Password)", Snackbar.LENGTH_SHORT).show();
+            } else {
+                // Llamar al método del ViewModel para registrar.
+                // NOTA: authViewModel.register() llama a AuthRepository.register() que usa
+                // firebaseAuth.createUserWithEmailAndPassword(email, password).
+                // Esto NO guarda el 'name' en Firebase Auth directamente.
+                // Si quieres guardar el nombre en Firebase Auth (displayName) o tu backend Django,
+                // necesitarás añadir esa lógica DESPUÉS de un registro exitoso (por ejemplo, en AuthRepository
+                // después de la llamada a createUserWithEmailAndPassword si task.isSuccessful() es true,
+                // o enviando el nombre junto con el UID a tu backend).
+                authViewModel.register(email, password);
+
+                // La barra de carga y el estado de los botones se actualizarán vía el observer de isLoading.
+                // El resultado (éxito/fallo y mensaje) se comunicará vía los observers de isAuthenticated y message.
+            }
+        });
+
+        // Click Listener para el botón "Ya tengo cuenta" (ir a Login)
+        buttonLogin.setOnClickListener(v -> {
+            // NAVEGAR a LoginFragment usando NavController
+            try {
+                // *** IMPORTANTE: Asegúrate que R.id.action_registerFragment_to_loginFragment es el ID correcto en tu nav_graph.xml ***
+                navController.navigate(R.id.action_registerFragment_to_loginFragment);
+            } catch (IllegalArgumentException e) {
+                Log.e(TAG, "Navigation error to Login: " + e.getMessage());
+            }
+        });
+
+        // --- Lógica Inicial ---
+        // Opcional: Podrías verificar el estado de autenticación aquí si quisieras
+        // que un usuario ya logueado no viera la pantalla de registro, aunque es más
+        // común hacer esa verificación solo en la pantalla de Login/Splash.
+        // authViewModel.checkAuthenticationState();
     }
 
+    // Limpiar referencias UI en onDestroyView
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_register, container, false);
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Poner las referencias UI a null
+        editTextName = null;
+        editTextEmail = null;
+        editTextPassword = null;
+        buttonRegister = null;
+        buttonLogin = null;
+        progressBar = null;
+        navController = null; // Limpiar referencia al NavController local
+        // Los observers LiveData se limpian automáticamente con getViewLifecycleOwner()
     }
 }
