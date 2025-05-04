@@ -49,4 +49,10 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    // OkHttp (para logging opcional)
+    implementation(libs.logging.interceptor)
+    implementation(libs.gson)
 }
