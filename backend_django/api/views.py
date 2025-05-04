@@ -1,27 +1,49 @@
+# backend_django/api/views.py
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from .firebase_config import initialize_firebase, verify_id_token
+from .models import UserProfile
+
+# Inicializar Firebase al cargar el módulo
+initialize_firebase()
 
 
-@csrf_exempt  # Por ahora, deshabilitamos CSRF para facilitar las pruebas
-@require_http_methods(["POST"])  # Solo permite POST
+def get_or_create_user_profile(firebase_uid):
+    """Obtiene o crea un UserProfile basado en el firebase_uid"""
+    try:
+        user_profile = UserProfile.objects.get(firebase_uid=firebase_uid)
+    except UserProfile.DoesNotExist:
+        # Si no existe, lo creamos
+        user_profile = UserProfile.objects.create(firebase_uid=firebase_uid)
+
+    return user_profile
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
 def create_deck(request):
     try:
         # Parsear el JSON del body
         data = json.loads(request.body)
 
-        # Verificar que el token existe
+        # Obtener el token
         token = data.get('token')
 
         if not token:
             return JsonResponse({'error': 'Token requerido'}, status=400)
 
-        # Por ahora, simulamos una verificación exitosa
-        # En el siguiente paso implementaremos la verificación real
-        firebase_uid = 'test-uid-123'
+        # Verificar el token con Firebase
+        firebase_uid = verify_id_token(token)
 
-        # Por ahora, devolvemos un JSON hardcodeado
+        if not firebase_uid:
+            return JsonResponse({'error': 'Token inválido'}, status=401)
+
+        # Obtener o crear el UserProfile
+        user_profile = get_or_create_user_profile(firebase_uid)
+
+        # Por ahora, devolvemos un JSON hardcodeado (aún no guardamos Deck en BD)
         return JsonResponse({
             'status': 'success',
             'message': 'Deck creado exitosamente',
