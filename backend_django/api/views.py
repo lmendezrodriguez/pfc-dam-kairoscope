@@ -4,7 +4,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .firebase_config import initialize_firebase, verify_id_token
-from .models import UserProfile
+from .models import UserProfile, Deck, Card
+from .core.deck_generator import DeckGenerator
 
 # Inicializar Firebase al cargar el módulo
 initialize_firebase()
@@ -40,18 +41,54 @@ def create_deck(request):
         if not firebase_uid:
             return JsonResponse({'error': 'Token inválido'}, status=401)
 
+        # Obtener parámetros de generación
+        discipline = data.get('discipline', 'Arte')
+        block_description = data.get('blockDescription', 'Bloqueo general')
+        chosen_color = data.get('color', '#000000')
+
+        # Generar la baraja usando DeckGenerator
+        generator = DeckGenerator()
+        generated_deck = generator.generate_deck(
+            discipline=discipline,
+            block_description=block_description,
+            color=chosen_color,
+            num_cards=123
+        )
+
         # Obtener o crear el UserProfile
         user_profile = get_or_create_user_profile(firebase_uid)
 
-        # Por ahora, devolvemos un JSON hardcodeado (aún no guardamos Deck en BD)
+        # Verificar límite de barajas (8 máximo por usuario)
+        if user_profile.decks.count() >= 8:
+            return JsonResponse({
+                'error': 'Has alcanzado el límite de 8 barajas'
+            }, status=400)
+
+        # Crear Deck en la base de datos
+        deck = Deck.objects.create(
+            user=user_profile,
+            name=generated_deck['name'],
+            discipline=discipline,
+            block_description=block_description,
+            chosen_color=chosen_color
+        )
+
+        # Crear Cards en la base de datos
+        for strategy_text in generated_deck['strategies']:
+            Card.objects.create(
+                deck=deck,
+                text=strategy_text
+            )
+
+        # Devolver respuesta en formato correcto
         return JsonResponse({
             'status': 'success',
             'message': 'Deck creado exitosamente',
             'deck': {
-                'id': 1,
-                'name': 'Deck de prueba',
+                'id': deck.id,
+                'name': deck.name,
                 'user': firebase_uid,
-                'created_at': '2025-04-23T12:00:00Z'
+                'created_at': deck.created_at.isoformat()
             }
         }, status=201)
 
