@@ -1,5 +1,7 @@
 package com.lmr.kairoscope.data.network;
 
+import java.util.concurrent.TimeUnit;
+
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import okhttp3.OkHttpClient;
@@ -18,6 +20,9 @@ public class RetrofitClient {
         // Crear el client HTTP
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(logging)
+                .connectTimeout(60, TimeUnit.SECONDS)    // 60 segundos para conexión
+                .readTimeout(120, TimeUnit.SECONDS)      // 120 segundos para lectura
+                .writeTimeout(60, TimeUnit.SECONDS)      // 60 segundos para escritura
                 .build();
 
         // Configurar Retrofit

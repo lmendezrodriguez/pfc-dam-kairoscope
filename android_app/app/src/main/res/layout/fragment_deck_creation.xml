@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    tools:context=".view.fragment.DeckCreationFragment">
+
+    <!-- Título de la pantalla -->
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Crea tu baraja de estrategias"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Subtítulo explicativo -->
+    <TextView
+        android:id="@+id/textViewSubtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Personaliza tu baraja para superar tu bloqueo creativo"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ScrollView para asegurar que todo el contenido sea accesible en pantallas pequeñas -->
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSubtitle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- Campo de Disciplina -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutDiscipline"
+                style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:hint="Disciplina o campo creativo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextDiscipline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Campo de Descripción del Bloqueo -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutBlockDescription"
+                style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Describe tu bloqueo creativo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDiscipline">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextBlockDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:maxLines="5" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Sección de selección de color -->
+            <TextView
+                android:id="@+id/textViewColorLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Elige un color que represente tu estado creativo"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutBlockDescription"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Vista previa del color -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardViewColorPreview"
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp"
+                app:layout_constraintTop_toBottomOf="@+id/textViewColorLabel"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <View
+                    android:id="@+id/viewSelectedColor"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/md_theme_primary" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Selector de color - Red -->
+            <TextView
+                android:id="@+id/textViewRedLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="R"
+                android:textColor="#D32F2F"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@+id/cardViewColorPreview"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <SeekBar
+                android:id="@+id/seekBarRed"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:max="255"
+                android:progress="49"
+                app:layout_constraintBottom_toBottomOf="@+id/textViewRedLabel"
+                app:layout_constraintEnd_toStartOf="@+id/textViewRedValue"
+                app:layout_constraintHorizontal_bias="1.0"
+                app:layout_constraintStart_toEndOf="@+id/textViewRedLabel"
+                app:layout_constraintTop_toTopOf="@+id/textViewRedLabel"
+                app:layout_constraintVertical_bias="1.0" />
+
+            <TextView
+                android:id="@+id/textViewRedValue"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="49"
+                android:gravity="center"
+                app:layout_constraintTop_toTopOf="@+id/seekBarRed"
+                app:layout_constraintBottom_toBottomOf="@+id/seekBarRed"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Selector de color - Green -->
+            <TextView
+                android:id="@+id/textViewGreenLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="G"
+                android:textColor="#388E3C"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@+id/textViewRedLabel"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <SeekBar
+                android:id="@+id/seekBarGreen"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:max="255"
+                android:progress="98"
+                app:layout_constraintTop_toTopOf="@+id/textViewGreenLabel"
+                app:layout_constraintBottom_toBottomOf="@+id/textViewGreenLabel"
+                app:layout_constraintStart_toEndOf="@+id/textViewGreenLabel"
+                app:layout_constraintEnd_toStartOf="@+id/textViewGreenValue" />
+
+            <TextView
+                android:id="@+id/textViewGreenValue"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="98"
+                android:gravity="center"
+                app:layout_constraintTop_toTopOf="@+id/seekBarGreen"
+                app:layout_constraintBottom_toBottomOf="@+id/seekBarGreen"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Selector de color - Blue -->
+            <TextView
+                android:id="@+id/textViewBlueLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="B"
+                android:textColor="#1976D2"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@+id/textViewGreenLabel"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <SeekBar
+                android:id="@+id/seekBarBlue"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:max="255"
+                android:progress="141"
+                app:layout_constraintTop_toTopOf="@+id/textViewBlueLabel"
+                app:layout_constraintBottom_toBottomOf="@+id/textViewBlueLabel"
+                app:layout_constraintStart_toEndOf="@+id/textViewBlueLabel"
+                app:layout_constraintEnd_toStartOf="@+id/textViewBlueValue" />
+
+            <TextView
+                android:id="@+id/textViewBlueValue"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="141"
+                android:gravity="center"
+                app:layout_constraintTop_toTopOf="@+id/seekBarBlue"
+                app:layout_constraintBottom_toBottomOf="@+id/seekBarBlue"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Código Hexadecimal del Color -->
+            <TextView
+                android:id="@+id/textViewHexColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="#31628D"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@+id/textViewBlueLabel"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Botón para generar la baraja -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCreateDeck"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="Generar Baraja"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                app:layout_constraintTop_toBottomOf="@+id/textViewHexColor"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Nota sobre el tiempo de espera -->
+            <TextView
+                android:id="@+id/textViewNote"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="La generación de tu baraja personalizada puede tomar hasta 30 segundos. Se crearán 123 cartas adaptadas a tu situación."
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:gravity="center"
+                app:layout_constraintTop_toBottomOf="@+id/buttonCreateDeck"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Espacio al final para pantallas pequeñas -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/textViewNote"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+    <!-- ProgressBar (sobre todo) -->
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

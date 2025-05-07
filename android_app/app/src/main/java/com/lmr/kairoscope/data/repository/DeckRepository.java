@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.JsonObject;
+import com.lmr.kairoscope.data.model.DeckCreationRequest;
 import com.lmr.kairoscope.data.model.DeckResponse;
 import com.lmr.kairoscope.data.network.ApiService;
 import com.lmr.kairoscope.data.network.RetrofitClient;
@@ -33,7 +34,7 @@ public class DeckRepository {
     }
 
     // Método para crear una baraja
-    public void createDeck() {
+    public void createDeck(DeckCreationRequest request) {
         // Obtener el usuario actual
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
 
@@ -49,9 +50,12 @@ public class DeckRepository {
                     if (task.isSuccessful()) {
                         String idToken = task.getResult().getToken();
 
-                        // Crear un objeto JSON con el token en el body (como espera Django)
+                        // Crear un objeto JSON con el token y los datos de la solicitud
                         JsonObject requestBody = new JsonObject();
                         requestBody.addProperty("token", idToken);
+                        requestBody.addProperty("discipline", request.getDiscipline());
+                        requestBody.addProperty("blockDescription", request.getBlockDescription());
+                        requestBody.addProperty("color", request.getColor());
 
                         // Hacer la llamada a la API
                         Call<DeckResponse> call = apiService.createDeck(requestBody);
