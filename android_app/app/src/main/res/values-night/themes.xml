@@ -54,10 +54,46 @@
         <item name="colorOnCustomColor2">@color/colorOnCustomColor2</item>
         <item name="colorCustomColor2Container">@color/colorCustomColor2Container</item>
         <item name="colorOnCustomColor2Container">@color/colorOnCustomColor2Container</item>
+        <!-- Estilos de tipografía -->
+        <style name="TextAppearance.App.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+            <item name="fontFamily">@font/josefin_slab</item>
+        </style>
+
+        <style name="TextAppearance.App.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+            <item name="fontFamily">@font/josefin_slab</item>
+        </style>
+
+        <style name="TextAppearance.App.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+            <item name="fontFamily">@font/josefin_slab</item>
+        </style>
+
+        <style name="TextAppearance.App.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+            <item name="fontFamily">@font/josefin_slab</item>
+        </style>
+
+        <style name="TextAppearance.App.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+            <item name="fontFamily">@font/montserrat_alternates</item>
+        </style>
+
+        <style name="TextAppearance.App.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+            <item name="fontFamily">@font/montserrat_alternates</item>
+        </style>
+
+        <style name="TextAppearance.App.BodySmall" parent="TextAppearance.Material3.BodySmall">
+            <item name="fontFamily">@font/montserrat_alternates</item>
+        </style>
     </style>
     <!-- Base application theme. -->
     <style name="Base.Theme.KAIroscope" parent="AppTheme">
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Aplicar estilos de tipografía -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.App.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.App.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.App.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.App.TitleLarge</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.App.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.App.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.App.BodySmall</item>
     </style>
 </resources>
