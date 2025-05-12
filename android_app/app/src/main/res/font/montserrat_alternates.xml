@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-- Regular -->
+    <font
+        android:font="@font/montserratalternates_regular"
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        app:font="@font/montserratalternates_regular"
+        app:fontStyle="normal"
+        app:fontWeight="400" />
+
+    <!-- Italic -->
+    <font
+        android:font="@font/montserratalternates_italic"
+        android:fontStyle="italic"
+        android:fontWeight="400"
+        app:font="@font/montserratalternates_italic"
+        app:fontStyle="italic"
+        app:fontWeight="400" />
+
+    <!-- Light -->
+    <font
+        android:font="@font/montserratalternates_light"
+        android:fontStyle="normal"
+        android:fontWeight="300"
+        app:font="@font/montserratalternates_light"
+        app:fontStyle="normal"
+        app:fontWeight="300" />
+
+    <!-- Light Italic -->
+    <font
+        android:font="@font/montserratalternates_lightitalic"
+        android:fontStyle="italic"
+        android:fontWeight="300"
+        app:font="@font/montserratalternates_lightitalic"
+        app:fontStyle="italic"
+        app:fontWeight="300" />
+
+    <!-- Medium -->
+    <font
+        android:font="@font/montserratalternates_medium"
+        android:fontStyle="normal"
+        android:fontWeight="500"
+        app:font="@font/montserratalternates_medium"
+        app:fontStyle="normal"
+        app:fontWeight="500" />
+
+    <!-- Medium Italic -->
+    <font
+        android:font="@font/montserratalternates_mediumitalic"
+        android:fontStyle="italic"
+        android:fontWeight="500"
+        app:font="@font/montserratalternates_mediumitalic"
+        app:fontStyle="italic"
+        app:fontWeight="500" />
+
+    <!-- SemiBold -->
+    <font
+        android:font="@font/montserratalternates_semibold"
+        android:fontStyle="normal"
+        android:fontWeight="600"
+        app:font="@font/montserratalternates_semibold"
+        app:fontStyle="normal"
+        app:fontWeight="600" />
+
+    <!-- SemiBold Italic -->
+    <font
+        android:font="@font/montserratalternates_semibolditalic"
+        android:fontStyle="italic"
+        android:fontWeight="600"
+        app:font="@font/montserratalternates_semibolditalic"
+        app:fontStyle="italic"
+        app:fontWeight="600" />
+
+    <!-- Bold -->
+    <font
+        android:font="@font/montserratalternates_bold"
+        android:fontStyle="normal"
+        android:fontWeight="700"
+        app:font="@font/montserratalternates_bold"
+        app:fontStyle="normal"
+        app:fontWeight="700" />
+
+    <!-- Bold Italic -->
+    <font
+        android:font="@font/montserratalternates_bolditalic"
+        android:fontStyle="italic"
+        android:fontWeight="700"
+        app:font="@font/montserratalternates_bolditalic"
+        app:fontStyle="italic"
+        app:fontWeight="700" />
+
+    <!-- ExtraBold -->
+    <font
+        android:font="@font/montserratalternates_extrabold"
+        android:fontStyle="normal"
+        android:fontWeight="800"
+        app:font="@font/montserratalternates_extrabold"
+        app:fontStyle="normal"
+        app:fontWeight="800" />
+
+    <!-- ExtraBold Italic -->
+    <font
+        android:font="@font/montserratalternates_extrabolditalic"
+        android:fontStyle="italic"
+        android:fontWeight="800"
+        app:font="@font/montserratalternates_extrabolditalic"
+        app:fontStyle="italic"
+        app:fontWeight="800" />
+
+    <!-- ExtraLight -->
+    <font
+        android:font="@font/montserratalternates_extralight"
+        android:fontStyle="normal"
+        android:fontWeight="200"
+        app:font="@font/montserratalternates_extralight"
+        app:fontStyle="normal"
+        app:fontWeight="200" />
+
+    <!-- ExtraLight Italic -->
+    <font
+        android:font="@font/montserratalternates_extralightitalic"
+        android:fontStyle="italic"
+        android:fontWeight="200"
+        app:font="@font/montserratalternates_extralightitalic"
+        app:fontStyle="italic"
+        app:fontWeight="200" />
+
+    <!-- Thin -->
+    <font
+        android:font="@font/montserratalternates_thin"
+        android:fontStyle="normal"
+        android:fontWeight="100"
+        app:font="@font/montserratalternates_thin"
+        app:fontStyle="normal"
+        app:fontWeight="100" />
+
+    <!-- Thin Italic -->
+    <font
+        android:font="@font/montserratalternates_thinitalic"
+        android:fontStyle="italic"
+        android:fontWeight="100"
+        app:font="@font/montserratalternates_thinitalic"
+        app:fontStyle="italic"
+        app:fontWeight="100" />
+
+    <!-- Black -->
+    <font
+        android:font="@font/montserratalternates_black"
+        android:fontStyle="normal"
+        android:fontWeight="900"
+        app:font="@font/montserratalternates_black"
+        app:fontStyle="normal"
+        app:fontWeight="900" />
+
+    <!-- Black Italic -->
+    <font
+        android:font="@font/montserratalternates_blackitalic"
+        android:fontStyle="italic"
+        android:fontWeight="900"
+        app:font="@font/montserratalternates_blackitalic"
+        app:fontStyle="italic"
+        app:fontWeight="900" />
+</font-family>

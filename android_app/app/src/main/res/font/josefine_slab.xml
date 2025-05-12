@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-- Regular -->
+    <font
+        android:font="@font/josefinslab_regular"
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        app:font="@font/josefinslab_regular"
+        app:fontStyle="normal"
+        app:fontWeight="400" />
+
+    <!-- Italic -->
+    <font
+        android:font="@font/josefinslab_italic"
+        android:fontStyle="italic"
+        android:fontWeight="400"
+        app:font="@font/josefinslab_italic"
+        app:fontStyle="italic"
+        app:fontWeight="400" />
+
+    <!-- Light -->
+    <font
+        android:font="@font/josefinslab_light"
+        android:fontStyle="normal"
+        android:fontWeight="300"
+        app:font="@font/josefinslab_light"
+        app:fontStyle="normal"
+        app:fontWeight="300" />
+
+    <!-- Light Italic -->
+    <font
+        android:font="@font/josefinslab_lightitalic"
+        android:fontStyle="italic"
+        android:fontWeight="300"
+        app:font="@font/josefinslab_lightitalic"
+        app:fontStyle="italic"
+        app:fontWeight="300" />
+
+    <!-- Medium -->
+    <font
+        android:font="@font/josefinslab_medium"
+        android:fontStyle="normal"
+        android:fontWeight="500"
+        app:font="@font/josefinslab_medium"
+        app:fontStyle="normal"
+        app:fontWeight="500" />
+
+    <!-- Medium Italic -->
+    <font
+        android:font="@font/josefinslab_mediumitalic"
+        android:fontStyle="italic"
+        android:fontWeight="500"
+        app:font="@font/josefinslab_mediumitalic"
+        app:fontStyle="italic"
+        app:fontWeight="500" />
+
+    <!-- SemiBold -->
+    <font
+        android:font="@font/josefinslab_semibold"
+        android:fontStyle="normal"
+        android:fontWeight="600"
+        app:font="@font/josefinslab_semibold"
+        app:fontStyle="normal"
+        app:fontWeight="600" />
+
+    <!-- SemiBold Italic -->
+    <font
+        android:font="@font/josefinslab_semibolditalic"
+        android:fontStyle="italic"
+        android:fontWeight="600"
+        app:font="@font/josefinslab_semibolditalic"
+        app:fontStyle="italic"
+        app:fontWeight="600" />
+
+    <!-- Bold -->
+    <font
+        android:font="@font/josefinslab_bold"
+        android:fontStyle="normal"
+        android:fontWeight="700"
+        app:font="@font/josefinslab_bold"
+        app:fontStyle="normal"
+        app:fontWeight="700" />
+
+    <!-- Bold Italic -->
+    <font
+        android:font="@font/josefinslab_bolditalic"
+        android:fontStyle="italic"
+        android:fontWeight="700"
+        app:font="@font/josefinslab_bolditalic"
+        app:fontStyle="italic"
+        app:fontWeight="700" />
+
+    <!-- ExtraLight -->
+    <font
+        android:font="@font/josefinslab_extralight"
+        android:fontStyle="normal"
+        android:fontWeight="200"
+        app:font="@font/josefinslab_extralight"
+        app:fontStyle="normal"
+        app:fontWeight="200" />
+
+    <!-- ExtraLight Italic -->
+    <font
+        android:font="@font/josefinslab_extralightitalic"
+        android:fontStyle="italic"
+        android:fontWeight="200"
+        app:font="@font/josefinslab_extralightitalic"
+        app:fontStyle="italic"
+        app:fontWeight="200" />
+
+    <!-- Thin -->
+    <font
+        android:font="@font/josefinslab_thin"
+        android:fontStyle="normal"
+        android:fontWeight="100"
+        app:font="@font/josefinslab_thin"
+        app:fontStyle="normal"
+        app:fontWeight="100" />
+
+    <!-- Thin Italic -->
+    <font
+        android:font="@font/josefinslab_thinitalic"
+        android:fontStyle="italic"
+        android:fontWeight="100"
+        app:font="@font/josefinslab_thinitalic"
+        app:fontStyle="italic"
+        app:fontWeight="100" />
+</font-family>
