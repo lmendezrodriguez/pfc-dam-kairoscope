@@ -8,26 +8,26 @@
     android:padding="24dp"
     tools:context=".view.fragment.DeckCreationFragment">
 
-    <!-- Título de la pantalla -->
+    <!-- Título de la pantalla - Actualizado para usar Josefin Slab -->
     <TextView
         android:id="@+id/textViewTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Crea tu baraja de estrategias"
-        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+        android:textAppearance="?attr/textAppearanceHeadlineMedium"
         android:gravity="center"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Subtítulo explicativo -->
+    <!-- Subtítulo explicativo - Actualizado para usar Montserrat Alternates -->
     <TextView
         android:id="@+id/textViewSubtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="Personaliza tu baraja para superar tu bloqueo creativo"
-        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
         android:gravity="center"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle"
         app:layout_constraintStart_toStartOf="parent"
@@ -65,7 +65,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:textAppearance="?attr/textAppearanceBodyMedium" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Campo de Descripción del Bloqueo -->
@@ -86,7 +87,8 @@
                     android:layout_height="wrap_content"
                     android:inputType="textMultiLine"
                     android:minLines="3"
-                    android:maxLines="5" />
+                    android:maxLines="5"
+                    android:textAppearance="?attr/textAppearanceBodyMedium" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Sección de selección de color -->
@@ -96,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Elige un color que represente tu estado creativo"
-                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayoutBlockDescription"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -129,6 +131,7 @@
                 android:text="R"
                 android:textColor="#D32F2F"
                 android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
                 app:layout_constraintTop_toBottomOf="@+id/cardViewColorPreview"
                 app:layout_constraintStart_toStartOf="parent" />
 
@@ -153,6 +156,7 @@
                 android:layout_marginStart="8dp"
                 android:text="49"
                 android:gravity="center"
+                android:textAppearance="?attr/textAppearanceBodySmall"
                 app:layout_constraintTop_toTopOf="@+id/seekBarRed"
                 app:layout_constraintBottom_toBottomOf="@+id/seekBarRed"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -166,6 +170,7 @@
                 android:text="G"
                 android:textColor="#388E3C"
                 android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
                 app:layout_constraintTop_toBottomOf="@+id/textViewRedLabel"
                 app:layout_constraintStart_toStartOf="parent" />
 
@@ -188,6 +193,7 @@
                 android:layout_marginStart="8dp"
                 android:text="98"
                 android:gravity="center"
+                android:textAppearance="?attr/textAppearanceBodySmall"
                 app:layout_constraintTop_toTopOf="@+id/seekBarGreen"
                 app:layout_constraintBottom_toBottomOf="@+id/seekBarGreen"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -201,6 +207,7 @@
                 android:text="B"
                 android:textColor="#1976D2"
                 android:textStyle="bold"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
                 app:layout_constraintTop_toBottomOf="@+id/textViewGreenLabel"
                 app:layout_constraintStart_toStartOf="parent" />
 
@@ -223,18 +230,19 @@
                 android:layout_marginStart="8dp"
                 android:text="141"
                 android:gravity="center"
+                android:textAppearance="?attr/textAppearanceBodySmall"
                 app:layout_constraintTop_toTopOf="@+id/seekBarBlue"
                 app:layout_constraintBottom_toBottomOf="@+id/seekBarBlue"
                 app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Código Hexadecimal del Color -->
+            <!-- Código Hexadecimal del Color - Usamos titulolarge para que destaque más -->
             <TextView
                 android:id="@+id/textViewHexColor"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="#31628D"
-                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textAppearance="?attr/textAppearanceTitleLarge"
                 android:textStyle="bold"
                 app:layout_constraintTop_toBottomOf="@+id/textViewBlueLabel"
                 app:layout_constraintStart_toStartOf="parent"
@@ -260,7 +268,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="La generación de tu baraja personalizada puede tomar hasta 30 segundos. Se crearán 123 cartas adaptadas a tu situación."
-                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textAppearance="?attr/textAppearanceBodySmall"
                 android:gravity="center"
                 app:layout_constraintTop_toBottomOf="@+id/buttonCreateDeck"
                 app:layout_constraintStart_toStartOf="parent"
