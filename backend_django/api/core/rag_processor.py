@@ -1,34 +1,74 @@
+# backend_django/api/core/rag_processor.py
 import os
 import json
 from pathlib import Path
 from typing import List, Dict, Any
+
 from django.conf import settings
-import google.generativeai as genai
-import numpy as np
+from langchain.embeddings import \
+    GooglePalmEmbeddings  # Puedes usar GoogleGenerativeAIEmbeddings si prefieres
+from langchain.vectorstores import FAISS
+from langchain.schema import Document
 
 
 class RAGProcessor:
+    """
+    Procesador RAG (Retrieval-Augmented Generation) que gestiona la búsqueda
+    de contenido relevante en la base de conocimientos para generar estrategias.
+
+    Implementa carga/guardado del vector store en disco para evitar recálculos.
+    """
+
+    # Variable de clase para el patrón singleton (opcional)
+    _instance = None
+
+    def __new__(cls):
+        # Implementación del patrón singleton (opcional)
+        if cls._instance is None:
+            cls._instance = super(RAGProcessor, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
+        # Evitamos inicializar múltiples veces si usamos singleton
+        if hasattr(self, '_initialized') and self._initialized:
+            return
+
+        print("Inicializando RAGProcessor...")
+
+        # Rutas para la base de conocimientos y el vector store
         self.knowledge_base_path = Path(
             settings.BASE_DIR) / "api" / "knowledge_base"
+        self.vector_store_path = Path(
+            settings.BASE_DIR) / "api" / "vector_store"
 
-        # Configurar Google Generative AI
+        # Aseguramos que exista la carpeta para el vector store
+        os.makedirs(self.vector_store_path, exist_ok=True)
+
+        # Verificamos la API key
         api_key = os.getenv('GOOGLE_API_KEY')
         if not api_key:
             raise ValueError(
                 "GOOGLE_API_KEY no encontrada en variables de entorno")
 
-        genai.configure(api_key=api_key)
+        # Inicializamos el modelo de embeddings
+        self.embeddings = GooglePalmEmbeddings(google_api_key=api_key)
 
-        # Cargar documentos
+        # Cargamos documentos
         self.documents = self._load_documents()
-        self.document_embeddings = None
 
-    def _load_documents(self) -> List[Dict[str, Any]]:
-        """Carga documentos desde archivos JSONL"""
+        # Cargamos o creamos el vector store (sin recalcular si ya existe)
+        self.vector_store = self._load_or_create_vector_store()
+
+        self._initialized = True
+        print("RAGProcessor inicializado correctamente")
+
+    def _load_documents(self) -> List[Document]:
+        """
+        Carga documentos desde archivos JSONL en la carpeta knowledge_base.
+        """
         documents = []
 
-        # Procesar archivos JSONL
         for file_path in self.knowledge_base_path.glob("*.jsonl"):
             try:
                 with open(file_path, 'r', encoding='utf-8') as file:
@@ -37,152 +77,166 @@ class RAGProcessor:
                             try:
                                 data = json.loads(line)
 
-                                # Añadir metadatos de origen
-                                data['source_file'] = str(file_path.name)
-                                data['line_number'] = line_number
+                                text = data.get('text', '')
+                                metadata = {
+                                    'source_file': file_path.name,
+                                    'line_number': line_number
+                                }
 
-                                documents.append(data)
+                                # Otros campos como metadatos
+                                for key, value in data.items():
+                                    if key != 'text':
+                                        metadata[key] = value
+
+                                doc = Document(page_content=text,
+                                               metadata=metadata)
+                                documents.append(doc)
 
                             except json.JSONDecodeError:
                                 print(
-                                    f"Error parsing JSON en {file_path}:{line_number}")
+                                    f"Error al parsear JSON en {file_path}:{line_number}")
             except Exception as e:
-                print(f"Error leyendo {file_path}: {e}")
+                print(f"Error al leer {file_path}: {e}")
 
         print(f"Documentos cargados: {len(documents)}")
         return documents
 
-    def _precompute_embeddings(self):
-        """Precomputa embeddings para todos los documentos"""
-        if self.document_embeddings is not None:
-            return
+    def _load_or_create_vector_store(self):
+        """
+        Carga el vector store desde el disco si existe,
+        o lo crea y guarda si no existe.
+        """
+        vector_store_file = self.vector_store_path / "faiss_index"
 
-        print("Computando embeddings para documentos...")
-        self.document_embeddings = []
-
-        for i, doc in enumerate(self.documents):
+        # Verificamos si existe el vector store en disco
+        if vector_store_file.exists() and (
+        vector_store_file.with_suffix('.faiss')).exists():
             try:
-                text = doc.get('text', '')
-                result = genai.embed_content(
-                    model="models/embedding-001",
-                    content=text,
-                    task_type="retrieval_document"
+                print("Cargando vector store existente...")
+                vector_store = FAISS.load_local(
+                    str(vector_store_file),
+                    self.embeddings,
+                    allow_dangerous_deserialization=True
                 )
-                self.document_embeddings.append(result['embedding'])
-
-                if (i + 1) % 10 == 0:
-                    print(
-                        f"Procesados {i + 1}/{len(self.documents)} documentos")
-
+                print("Vector store cargado correctamente desde disco")
+                return vector_store
             except Exception as e:
-                print(f"Error procesando documento {i}: {e}")
-                # Usar embedding vacío en caso de error
-                self.document_embeddings.append([0] * 768)  # Dimensión típica
+                print(f"Error al cargar vector store desde disco: {e}")
+                print("Se creará un nuevo vector store...")
+        else:
+            print("No se encontró vector store en disco. Creando uno nuevo...")
 
-        print("Embeddings computados completamente")
+        # Si llegamos aquí, necesitamos crear un nuevo vector store
+        return self._create_and_save_vector_store(vector_store_file)
+
+    def _create_and_save_vector_store(self, vector_store_file):
+        """
+        Crea un nuevo vector store y lo guarda en disco.
+        """
+        try:
+            if not self.documents:
+                print(
+                    "ADVERTENCIA: No hay documentos para crear el vector store")
+                documents = [Document(page_content="Documento de respaldo")]
+            else:
+                documents = self.documents
+
+            print(f"Creando vector store con {len(documents)} documentos...")
+            vector_store = FAISS.from_documents(documents, self.embeddings)
+
+            # Guardamos el vector store en disco para usos futuros
+            vector_store.save_local(str(vector_store_file))
+            print(f"Vector store creado y guardado en {vector_store_file}")
+
+            return vector_store
+        except Exception as e:
+            print(f"Error al crear vector store: {e}")
+            # Si todo falla, creamos un vector store mínimo en memoria
+            return FAISS.from_documents(
+                [Document(page_content="Documento de respaldo para error")],
+                self.embeddings
+            )
+
+    def rebuild_vector_store(self) -> bool:
+        """
+        Método público para reconstruir manualmente el vector store.
+        Útil durante el desarrollo cuando se modifican los documentos.
+
+        Returns:
+            bool: True si se reconstruyó correctamente, False en caso contrario
+        """
+        try:
+            print("Reconstruyendo vector store...")
+            vector_store_file = self.vector_store_path / "faiss_index"
+
+            # Recargamos los documentos para capturar cambios
+            self.documents = self._load_documents()
+
+            # Creamos nuevo vector store
+            self.vector_store = self._create_and_save_vector_store(
+                vector_store_file)
+
+            print("Vector store reconstruido exitosamente")
+            return True
+        except Exception as e:
+            print(f"Error al reconstruir vector store: {e}")
+            return False
 
     def search_relevant_content(self, query: str, k: int = 5) -> List[
-        Dict[str, Any]]:
-        """Busca contenido relevante usando embeddings"""
+        Document]:
+        """
+        Busca los documentos más relevantes para una consulta.
 
-        # Asegurar que los embeddings estén precomputados
-        if self.document_embeddings is None:
-            self._precompute_embeddings()
+        Args:
+            query: El texto de la consulta
+            k: Número de documentos a devolver
 
-        # Generar embedding para la query
+        Returns:
+            Lista de documentos más relevantes
+        """
         try:
-            result = genai.embed_content(
-                model="models/embedding-001",
-                content=query,
-                task_type="retrieval_query"
-            )
-            query_embedding = result['embedding']
+            # Búsqueda por similitud semántica
+            results = self.vector_store.similarity_search(query, k=k)
+            return results
         except Exception as e:
-            print(f"Error generando embedding para query: {e}")
+            print(f"Error en la búsqueda vectorial: {e}")
+            # Fallback a búsqueda más simple
             return self._fallback_search(query, k)
 
-        # Calcular similitudes
-        similarities = []
-        for i, doc_embedding in enumerate(self.document_embeddings):
-            # Similitud coseno
-            dot_product = np.dot(query_embedding, doc_embedding)
-            norm_query = np.linalg.norm(query_embedding)
-            norm_doc = np.linalg.norm(doc_embedding)
-
-            if norm_query != 0 and norm_doc != 0:
-                similarity = dot_product / (norm_query * norm_doc)
-            else:
-                similarity = 0
-
-            similarities.append((i, similarity))
-
-        # Ordenar por similitud
-        similarities.sort(key=lambda x: x[1], reverse=True)
-
-        # Crear resultados
-        results = []
-        for idx, similarity in similarities[:k]:
-            doc = self.documents[idx]
-            results.append({
-                'text': doc.get('text', ''),
-                'metadata': {k: v for k, v in doc.items() if k != 'text'},
-                'similarity': similarity
-            })
-
-        return results
-
-    def _fallback_search(self, query: str, k: int = 5) -> List[Dict[str, Any]]:
-        """Búsqueda simple basada en palabras clave (fallback)"""
+    def _fallback_search(self, query: str, k: int = 5) -> List[Document]:
+        """
+        Método alternativo de búsqueda basado en palabras clave.
+        """
         query_words = query.lower().split()
+        scored_docs = []
 
-        results = []
         for doc in self.documents:
-            text = doc.get('text', '').lower()
+            text = doc.page_content.lower()
             score = sum(1 for word in query_words if word in text)
 
             if score > 0:
-                results.append({
-                    'text': doc.get('text', ''),
-                    'metadata': {k: v for k, v in doc.items() if k != 'text'},
-                    'score': score
-                })
+                scored_docs.append((doc, score))
 
-        # Ordenar por relevancia
-        results.sort(key=lambda x: x['score'], reverse=True)
-        return results[:k]
+        scored_docs.sort(key=lambda x: x[1], reverse=True)
+        return [doc for doc, _ in scored_docs[:k]]
 
-    def search_by_tags(self, tags: List[str], k: int = 5) -> List[
-        Dict[str, Any]]:
-        """Busca específicamente por etiquetas"""
-        results = []
+    def search_by_tags(self, tags: List[str], k: int = 5) -> List[Document]:
+        """
+        Busca documentos por etiquetas específicas.
+        """
+        matched_docs = []
 
         for doc in self.documents:
-            doc_tags = doc.get('etiquetas', [])
-            matches = len(set(tags) & set(doc_tags))
+            # Obtenemos las etiquetas del documento
+            doc_tags = doc.metadata.get('etiquetas', [])
+
+            # Contamos coincidencias
+            matches = len(set(tags) & set(doc_tags)) if isinstance(doc_tags,
+                                                                   list) else 0
 
             if matches > 0:
-                results.append({
-                    'text': doc.get('text', ''),
-                    'metadata': {k: v for k, v in doc.items() if k != 'text'},
-                    'tag_matches': matches
-                })
+                matched_docs.append((doc, matches))
 
-        # Ordenar por número de coincidencias
-        results.sort(key=lambda x: x['tag_matches'], reverse=True)
-        return results[:k]
-
-    def search_by_tone(self, desired_tone: str, k: int = 5) -> List[
-        Dict[str, Any]]:
-        """Busca por tono específico"""
-        results = []
-
-        for doc in self.documents:
-            doc_tone = doc.get('tono', '').lower()
-
-            if desired_tone.lower() in doc_tone:
-                results.append({
-                    'text': doc.get('text', ''),
-                    'metadata': {k: v for k, v in doc.items() if k != 'text'}
-                })
-
-        return results[:k]
+        # Ordenamos por número de coincidencias
+        matched_docs.sort(key=lambda x: x[1], reverse=True)
+        return [doc for doc, _ in matched_docs[:k]]
