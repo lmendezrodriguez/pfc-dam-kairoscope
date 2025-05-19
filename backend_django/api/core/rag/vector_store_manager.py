@@ -8,7 +8,7 @@ from typing import List, Optional
 from django.conf import settings
 from langchain.embeddings.base import Embeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 from langchain.schema import Document
 
 
@@ -37,19 +37,10 @@ class VectorStoreManager:
 
         # Inicializar embeddings
         self.embeddings = GoogleGenerativeAIEmbeddings(
-            google_api_key=api_key,
             model="models/text-embedding-004"
             # Especifica el nombre del modelo
         )
 
-    def _create_embeddings(self) -> Embeddings:
-        """
-        Crea y configura el modelo de embeddings.
-
-        Returns:
-            Modelo de embeddings configurado
-        """
-        return GooglePalmEmbeddings(google_api_key=self.api_key)
 
     def load_or_create(self, documents: List[Document]) -> FAISS:
         """
