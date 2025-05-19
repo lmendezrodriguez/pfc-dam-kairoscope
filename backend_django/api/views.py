@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .firebase_config import initialize_firebase, verify_id_token
 from .models import UserProfile, Deck, Card
-from .core.deck_generator import DeckGenerator
+from .core.deck.deck_builder import DeckBuilder
 
 # Inicializar Firebase al cargar el módulo
 initialize_firebase()
@@ -47,8 +47,8 @@ def create_deck(request):
         chosen_color = data.get('color', '#000000')
 
         # Generar la baraja usando DeckGenerator
-        generator = DeckGenerator()
-        generated_deck = generator.generate_deck(
+        builder = DeckBuilder()
+        generated_deck = builder.build_deck(
             discipline=discipline,
             block_description=block_description,
             color=chosen_color,

@@ -1,4 +1,3 @@
-# backend_django/api/apps.py
 from django.apps import AppConfig
 
 
@@ -9,7 +8,7 @@ class ApiConfig(AppConfig):
     def ready(self):
         """Se ejecuta cuando Django inicia la aplicación"""
         # Importamos aquí para evitar problemas de importación circular
-        from api.core.rag_processor import RAGProcessor
+        from api.core.rag.rag_processor import RAGProcessor
 
         try:
             # Intentamos inicializar RAGProcessor al arrancar
