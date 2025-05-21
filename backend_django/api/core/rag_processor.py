@@ -1,188 +1,220 @@
 import os
 import json
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from django.conf import settings
-import google.generativeai as genai
-import numpy as np
+
+from langchain.schema import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_community.vectorstores import FAISS # Usar langchain_community para componentes de terceros
 
 
 class RAGProcessor:
-    def __init__(self):
-        self.knowledge_base_path = Path(
-            settings.BASE_DIR) / "api" / "knowledge_base"
+    """
+    Procesa documentos desde archivos JSONL en una base de conocimiento,
+    crea embeddings usando Google GenAI y guarda el índice FAISS
+    persistentemente para su uso posterior en recuperación (RAG).
 
-        # Configurar Google Generative AI
+    Esta clase se enfoca únicamente en el proceso de ingestión y guardado,
+    no en la consulta del vector store.
+    """
+
+    def __init__(self,
+                 knowledge_base_path: Optional[Path] = None,
+                 vector_store_path: Optional[Path] = None):
+        """
+        Inicializa el procesador RAG.
+
+        Configura las rutas de la base de conocimiento y el vector store,
+        y prepara el modelo de embeddings de Google GenAI.
+
+        Args:
+            knowledge_base_path: Ruta al directorio que contiene los archivos JSONL.
+                                 Por defecto: settings.BASE_DIR / "api" / "knowledge_base".
+            vector_store_path: Ruta al directorio donde se guardará el índice FAISS.
+                               Por defecto: settings.BASE_DIR / "api" / "vector_store".
+
+        Raises:
+            ValueError: Si la variable de entorno 'GOOGLE_API_KEY' no está configurada.
+            Exception: Si ocurre un error durante la inicialización de embeddings.
+        """
+        # Configurar las rutas usando Path para manejo robusto de directorios
+        self.knowledge_base_path = knowledge_base_path or Path(settings.BASE_DIR) / "api" / "knowledge_base"
+        self.vector_store_path = vector_store_path or Path(settings.BASE_DIR) / "api" / "vector_store"
+
+        # Asegurarse de que el directorio donde se guardará el vector store exista
+        os.makedirs(self.vector_store_path, exist_ok=True)
+        print(f"Directorio de la base de conocimiento: {self.knowledge_base_path}")
+        print(f"Directorio de guardado del vector store: {self.vector_store_path}")
+
+        # Verificar que la API Key de Google esté disponible en el entorno
         api_key = os.getenv('GOOGLE_API_KEY')
         if not api_key:
-            raise ValueError(
-                "GOOGLE_API_KEY no encontrada en variables de entorno")
+            raise ValueError("GOOGLE_API_KEY no encontrada en variables de entorno.")
 
-        genai.configure(api_key=api_key)
+        # Inicializar el modelo de Embeddings de Google GenAI con LangChain
+        # LangChain GoogleGenerativeAIEmbeddings lee GOOGLE_API_KEY automáticamente
+        try:
+            self.embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+            print("Embeddings de Google Generative AI (models/text-embedding-004) inicializados.")
+        except Exception as e:
+             print(f"Error al inicializar GoogleGenerativeAIEmbeddings: {e}")
+             raise # Re-lanzar la excepción si la inicialización falla
 
-        # Cargar documentos
-        self.documents = self._load_documents()
-        self.document_embeddings = None
 
-    def _load_documents(self) -> List[Dict[str, Any]]:
-        """Carga documentos desde archivos JSONL"""
+    def _load_documents(self) -> List[Document]:
+        """
+        Carga los documentos de origen desde archivos JSONL.
+        Cada línea en un archivo JSONL se trata como un documento.
+        Crea objetos Document de LangChain con el texto y metadatos.
+        """
         documents = []
+        print(f"Cargando documentos desde {self.knowledge_base_path}...")
 
-        # Procesar archivos JSONL
+        # Recorrer todos los archivos con extensión .jsonl en el directorio especificado
         for file_path in self.knowledge_base_path.glob("*.jsonl"):
             try:
                 with open(file_path, 'r', encoding='utf-8') as file:
+                    # Procesar cada línea del archivo JSONL
                     for line_number, line in enumerate(file, 1):
-                        if line.strip():
-                            try:
-                                data = json.loads(line)
+                        line = line.strip()
+                        if not line: # Saltar líneas completamente vacías
+                            continue
 
-                                # Añadir metadatos de origen
-                                data['source_file'] = str(file_path.name)
-                                data['line_number'] = line_number
+                        try:
+                            data: Dict[str, Any] = json.loads(line)
+                            # Asegurarse de que el campo 'text' existe y no está vacío
+                            if 'text' in data and data['text'].strip():
+                                # Crear un objeto Document para LangChain
+                                # page_content: Contenido principal del documento (el texto)
+                                # metadata: Información adicional (origen, línea, etiquetas, etc.)
+                                document = Document(
+                                    page_content=data['text'],
+                                    metadata={
+                                        # Incluir todos los campos del JSON excepto 'text' como metadatos
+                                        **{k: v for k, v in data.items() if k != 'text'},
+                                        'source_file': str(file_path.name), # Nombre del archivo de origen
+                                        'line_number': line_number # Número de línea en el archivo
+                                    }
+                                )
+                                documents.append(document)
+                            else:
+                                print(f"Advertencia: La línea {line_number} en {file_path.name} no contiene texto válido ('text' vacío o faltante). Ignorada.")
 
-                                documents.append(data)
+                        except json.JSONDecodeError:
+                            print(f"Error: No se pudo parsear JSON en {file_path.name}:{line_number}. La línea fue ignorada.")
+                        except Exception as e:
+                            print(f"Error inesperado procesando la línea {line_number} en {file_path.name}: {e}. Línea ignorada.")
 
-                            except json.JSONDecodeError:
-                                print(
-                                    f"Error parsing JSON en {file_path}:{line_number}")
+            except FileNotFoundError:
+                print(f"Advertencia: Archivo no encontrado - {file_path}. Saltando.")
             except Exception as e:
-                print(f"Error leyendo {file_path}: {e}")
+                print(f"Error al leer el archivo {file_path}: {e}. Archivo saltado.")
 
-        print(f"Documentos cargados: {len(documents)}")
+        print(f"Total de documentos de LangChain cargados y formateados: {len(documents)}")
         return documents
 
-    def _precompute_embeddings(self):
-        """Precomputa embeddings para todos los documentos"""
-        if self.document_embeddings is not None:
-            return
+    def _split_documents(self, documents: List[Document]) -> List[Document]:
+        """
+        Divide la lista de documentos de LangChain en fragmentos (chunks).
+        Basado en análisis de chunking, se usa RecursiveCharacterTextSplitter
+        con un tamaño de chunk de 400 caracteres y sin solapamiento.
+        """
+        if not documents:
+            print("No hay documentos para dividir en chunks.")
+            return []
 
-        print("Computando embeddings para documentos...")
-        self.document_embeddings = []
+        print(f"Dividiendo {len(documents)} documentos en chunks (chunk_size=400, chunk_overlap=0)...")
 
-        for i, doc in enumerate(self.documents):
-            try:
-                text = doc.get('text', '')
-                result = genai.embed_content(
-                    model="models/embedding-001",
-                    content=text,
-                    task_type="retrieval_document"
-                )
-                self.document_embeddings.append(result['embedding'])
+        # Inicializar el splitter recursivo de caracteres
+        # Busca separadores como saltos de línea para dividir texto
+        # chunk_size: Tamaño máximo aproximado de cada chunk en unidades de length_function (caracteres)
+        # chunk_overlap: Cuántos caracteres se repiten al inicio del siguiente chunk
+        # length_function: Cómo medir el tamaño (len para caracteres)
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=400,
+            chunk_overlap=0, # Sin solapamiento según recomendación para mejorar IoU
+            length_function=len
+        )
 
-                if (i + 1) % 10 == 0:
-                    print(
-                        f"Procesados {i + 1}/{len(self.documents)} documentos")
+        # Aplicar el splitter a la lista de documentos
+        chunks = text_splitter.split_documents(documents)
 
-            except Exception as e:
-                print(f"Error procesando documento {i}: {e}")
-                # Usar embedding vacío en caso de error
-                self.document_embeddings.append([0] * 768)  # Dimensión típica
+        print(f"Total de chunks creados: {len(chunks)}")
+        return chunks
 
-        print("Embeddings computados completamente")
+    def _create_faiss_index(self, chunks: List[Document]) -> FAISS:
+        """
+        Crea un índice FAISS (Facebook AI Similarity Search) a partir de los chunks.
+        Utiliza los embeddings de Google GenAI para generar las representaciones vectoriales.
+        """
+        if not chunks:
+            raise ValueError("No hay chunks disponibles para crear el índice FAISS.")
 
-    def search_relevant_content(self, query: str, k: int = 5) -> List[
-        Dict[str, Any]]:
-        """Busca contenido relevante usando embeddings"""
+        print(f"Creando índice FAISS a partir de {len(chunks)} chunks usando embeddings de Google GenAI...")
 
-        # Asegurar que los embeddings estén precomputados
-        if self.document_embeddings is None:
-            self._precompute_embeddings()
-
-        # Generar embedding para la query
+        # Crear el vector store FAISS directamente desde los chunks y el modelo de embeddings.
+        # FAISS.from_documents maneja la generación de embeddings para cada chunk internamente.
         try:
-            result = genai.embed_content(
-                model="models/embedding-001",
-                content=query,
-                task_type="retrieval_query"
-            )
-            query_embedding = result['embedding']
+            vector_store = FAISS.from_documents(chunks, self.embeddings)
+            print("Índice FAISS creado exitosamente.")
+            return vector_store
         except Exception as e:
-            print(f"Error generando embedding para query: {e}")
-            return self._fallback_search(query, k)
+            print(f"Error al crear el índice FAISS: {e}")
+            raise # Re-lanzar la excepción si falla la creación del índice
 
-        # Calcular similitudes
-        similarities = []
-        for i, doc_embedding in enumerate(self.document_embeddings):
-            # Similitud coseno
-            dot_product = np.dot(query_embedding, doc_embedding)
-            norm_query = np.linalg.norm(query_embedding)
-            norm_doc = np.linalg.norm(doc_embedding)
 
-            if norm_query != 0 and norm_doc != 0:
-                similarity = dot_product / (norm_query * norm_doc)
-            else:
-                similarity = 0
+    def _save_vector_store(self, vector_store: FAISS):
+        """
+        Guarda el índice FAISS y su información asociada localmente en el disco.
+        Se guarda en el directorio especificado durante la inicialización.
+        """
+        print(f"Guardando índice FAISS en el directorio: {self.vector_store_path}...")
+        try:
+            # save_local guarda varios archivos (index, docstore, etc.) necesarios para cargar el índice
+            vector_store.save_local(self.vector_store_path)
+            print("Índice FAISS guardado exitosamente.")
+        except Exception as e:
+            print(f"Error al intentar guardar el índice FAISS en {self.vector_store_path}: {e}")
+            raise # Re-lanzar la excepción para indicar que el proceso falló
 
-            similarities.append((i, similarity))
 
-        # Ordenar por similitud
-        similarities.sort(key=lambda x: x[1], reverse=True)
+    def process_and_save_vector_store(self):
+        """
+        Método principal para ejecutar el pipeline de procesamiento:
+        1. Carga documentos de origen desde JSONL.
+        2. Divide los documentos en chunks.
+        3. Crea el índice FAISS usando embeddings.
+        4. Guarda el índice FAISS en disco.
+        """
+        print("\n--- Iniciando Proceso de Construcción y Guardado del Vector Store FAISS ---")
+        try:
+            # Paso 1: Cargar documentos
+            documents = self._load_documents()
+            if not documents:
+                print("Proceso terminado: No se cargaron documentos válidos para procesar.")
+                return
 
-        # Crear resultados
-        results = []
-        for idx, similarity in similarities[:k]:
-            doc = self.documents[idx]
-            results.append({
-                'text': doc.get('text', ''),
-                'metadata': {k: v for k, v in doc.items() if k != 'text'},
-                'similarity': similarity
-            })
+            # Paso 2: Dividir documentos en chunks
+            chunks = self._split_documents(documents)
+            if not chunks:
+                 print("Proceso terminado: No se crearon chunks a partir de los documentos.")
+                 return
 
-        return results
+            # Paso 3: Crear el índice FAISS
+            vector_store = self._create_faiss_index(chunks)
 
-    def _fallback_search(self, query: str, k: int = 5) -> List[Dict[str, Any]]:
-        """Búsqueda simple basada en palabras clave (fallback)"""
-        query_words = query.lower().split()
+            # Paso 4: Guardar el índice FAISS
+            self._save_vector_store(vector_store)
 
-        results = []
-        for doc in self.documents:
-            text = doc.get('text', '').lower()
-            score = sum(1 for word in query_words if word in text)
+            print("\n--- Proceso de Construcción y Guardado del Vector Store Completado Exitosamente ---")
 
-            if score > 0:
-                results.append({
-                    'text': doc.get('text', ''),
-                    'metadata': {k: v for k, v in doc.items() if k != 'text'},
-                    'score': score
-                })
-
-        # Ordenar por relevancia
-        results.sort(key=lambda x: x['score'], reverse=True)
-        return results[:k]
-
-    def search_by_tags(self, tags: List[str], k: int = 5) -> List[
-        Dict[str, Any]]:
-        """Busca específicamente por etiquetas"""
-        results = []
-
-        for doc in self.documents:
-            doc_tags = doc.get('etiquetas', [])
-            matches = len(set(tags) & set(doc_tags))
-
-            if matches > 0:
-                results.append({
-                    'text': doc.get('text', ''),
-                    'metadata': {k: v for k, v in doc.items() if k != 'text'},
-                    'tag_matches': matches
-                })
-
-        # Ordenar por número de coincidencias
-        results.sort(key=lambda x: x['tag_matches'], reverse=True)
-        return results[:k]
-
-    def search_by_tone(self, desired_tone: str, k: int = 5) -> List[
-        Dict[str, Any]]:
-        """Busca por tono específico"""
-        results = []
-
-        for doc in self.documents:
-            doc_tone = doc.get('tono', '').lower()
-
-            if desired_tone.lower() in doc_tone:
-                results.append({
-                    'text': doc.get('text', ''),
-                    'metadata': {k: v for k, v in doc.items() if k != 'text'}
-                })
-
-        return results[:k]
+        except ValueError as ve:
+            # Errores esperados como falta de API Key o datos
+            print(f"\nError de Configuración o Datos: {ve}")
+            print("--- Proceso Fallido ---")
+        except Exception as e:
+            # Capturar cualquier otro error inesperado
+            print(f"\nOcurrió un Error Inesperado Durante el Proceso: {e}")
+            print("--- Proceso Fallido ---")
