@@ -54,35 +54,37 @@
         <item name="colorOnCustomColor2">@color/colorOnCustomColor2</item>
         <item name="colorCustomColor2Container">@color/colorCustomColor2Container</item>
         <item name="colorOnCustomColor2Container">@color/colorOnCustomColor2Container</item>
-        <!-- Estilos de tipografía -->
-        <style name="TextAppearance.App.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
-            <item name="fontFamily">@font/josefin_slab</item>
-        </style>
-
-        <style name="TextAppearance.App.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
-            <item name="fontFamily">@font/josefin_slab</item>
-        </style>
-
-        <style name="TextAppearance.App.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
-            <item name="fontFamily">@font/josefin_slab</item>
-        </style>
-
-        <style name="TextAppearance.App.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
-            <item name="fontFamily">@font/josefin_slab</item>
-        </style>
-
-        <style name="TextAppearance.App.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
-            <item name="fontFamily">@font/montserrat_alternates</item>
-        </style>
-
-        <style name="TextAppearance.App.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
-            <item name="fontFamily">@font/montserrat_alternates</item>
-        </style>
-
-        <style name="TextAppearance.App.BodySmall" parent="TextAppearance.Material3.BodySmall">
-            <item name="fontFamily">@font/montserrat_alternates</item>
-        </style>
     </style>
+
+    <!-- Estilos de tipografía -->
+    <style name="TextAppearance.App.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="fontFamily">@font/josefin_slab</item>
+    </style>
+
+    <style name="TextAppearance.App.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="fontFamily">@font/josefin_slab</item>
+    </style>
+
+    <style name="TextAppearance.App.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="fontFamily">@font/josefin_slab</item>
+    </style>
+
+    <style name="TextAppearance.App.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="fontFamily">@font/josefin_slab</item>
+    </style>
+
+    <style name="TextAppearance.App.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="fontFamily">@font/montserrat_alternates</item>
+    </style>
+
+    <style name="TextAppearance.App.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="fontFamily">@font/montserrat_alternates</item>
+    </style>
+
+    <style name="TextAppearance.App.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="fontFamily">@font/montserrat_alternates</item>
+    </style>
+
     <!-- Base application theme. -->
     <style name="Base.Theme.KAIroscope" parent="AppTheme">
         <!-- Customize your light theme here. -->
@@ -95,6 +97,4 @@
         <item name="textAppearanceBodyMedium">@style/TextAppearance.App.BodyMedium</item>
         <item name="textAppearanceBodySmall">@style/TextAppearance.App.BodySmall</item>
     </style>
-
-
 </resources>
