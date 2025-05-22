@@ -127,7 +127,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Logging configuration
-OGGING = {
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
@@ -158,23 +158,23 @@ OGGING = {
     'loggers': {
         'api': {
             'handlers': ['console', 'file'],
-            'level': 'INFO',
+            'level': 'DEBUG',  # ← CAMBIAR A DEBUG
             'propagate': False,
         },
         'api.views': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'DEBUG',  # ← CAMBIAR A DEBUG
             'propagate': False,
         },
         'api.core': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'DEBUG',  # ← CAMBIAR A DEBUG
             'propagate': False,
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',
+        'level': 'DEBUG',  # ← CAMBIAR A DEBUG TAMBIÉN
     },
 }
 
