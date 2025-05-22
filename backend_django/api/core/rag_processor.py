@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from django.conf import settings
@@ -7,214 +8,163 @@ from django.conf import settings
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_community.vectorstores import FAISS # Usar langchain_community para componentes de terceros
+from langchain_community.vectorstores import FAISS
+
+logger = logging.getLogger('api.core')
 
 
 class RAGProcessor:
-    """
-    Procesa documentos desde archivos JSONL en una base de conocimiento,
-    crea embeddings usando Google GenAI y guarda el índice FAISS
-    persistentemente para su uso posterior en recuperación (RAG).
-
-    Esta clase se enfoca únicamente en el proceso de ingestión y guardado,
-    no en la consulta del vector store.
-    """
+    """Procesa documentos JSONL y crea vector store FAISS para RAG."""
 
     def __init__(self,
                  knowledge_base_path: Optional[Path] = None,
                  vector_store_path: Optional[Path] = None):
-        """
-        Inicializa el procesador RAG.
+        self.knowledge_base_path = knowledge_base_path or Path(
+            settings.BASE_DIR) / "api" / "knowledge_base"
+        self.vector_store_path = vector_store_path or Path(
+            settings.BASE_DIR) / "api" / "vector_store"
 
-        Configura las rutas de la base de conocimiento y el vector store,
-        y prepara el modelo de embeddings de Google GenAI.
-
-        Args:
-            knowledge_base_path: Ruta al directorio que contiene los archivos JSONL.
-                                 Por defecto: settings.BASE_DIR / "api" / "knowledge_base".
-            vector_store_path: Ruta al directorio donde se guardará el índice FAISS.
-                               Por defecto: settings.BASE_DIR / "api" / "vector_store".
-
-        Raises:
-            ValueError: Si la variable de entorno 'GOOGLE_API_KEY' no está configurada.
-            Exception: Si ocurre un error durante la inicialización de embeddings.
-        """
-        # Configurar las rutas usando Path para manejo robusto de directorios
-        self.knowledge_base_path = knowledge_base_path or Path(settings.BASE_DIR) / "api" / "knowledge_base"
-        self.vector_store_path = vector_store_path or Path(settings.BASE_DIR) / "api" / "vector_store"
-
-        # Asegurarse de que el directorio donde se guardará el vector store exista
         os.makedirs(self.vector_store_path, exist_ok=True)
-        print(f"Directorio de la base de conocimiento: {self.knowledge_base_path}")
-        print(f"Directorio de guardado del vector store: {self.vector_store_path}")
+        logger.info(f"Knowledge base: {self.knowledge_base_path}")
+        logger.info(f"Vector store: {self.vector_store_path}")
 
-        # Verificar que la API Key de Google esté disponible en el entorno
         api_key = os.getenv('GOOGLE_API_KEY')
         if not api_key:
-            raise ValueError("GOOGLE_API_KEY no encontrada en variables de entorno.")
+            logger.error("GOOGLE_API_KEY not found in environment")
+            raise ValueError(
+                "GOOGLE_API_KEY no encontrada en variables de entorno.")
 
-        # Inicializar el modelo de Embeddings de Google GenAI con LangChain
-        # LangChain GoogleGenerativeAIEmbeddings lee GOOGLE_API_KEY automáticamente
         try:
-            self.embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
-            print("Embeddings de Google Generative AI (models/text-embedding-004) inicializados.")
+            self.embeddings = GoogleGenerativeAIEmbeddings(
+                model="models/text-embedding-004")
+            logger.info("Google GenAI embeddings initialized successfully")
         except Exception as e:
-             print(f"Error al inicializar GoogleGenerativeAIEmbeddings: {e}")
-             raise # Re-lanzar la excepción si la inicialización falla
-
+            logger.error(f"Failed to initialize embeddings: {e}")
+            raise
 
     def _load_documents(self) -> List[Document]:
-        """
-        Carga los documentos de origen desde archivos JSONL.
-        Cada línea en un archivo JSONL se trata como un documento.
-        Crea objetos Document de LangChain con el texto y metadatos.
-        """
+        """Carga documentos desde archivos JSONL."""
         documents = []
-        print(f"Cargando documentos desde {self.knowledge_base_path}...")
+        logger.info(f"Loading documents from {self.knowledge_base_path}")
 
-        # Recorrer todos los archivos con extensión .jsonl en el directorio especificado
-        for file_path in self.knowledge_base_path.glob("*.jsonl"):
+        jsonl_files = list(self.knowledge_base_path.glob("*.jsonl"))
+        if not jsonl_files:
+            logger.warning(
+                f"No JSONL files found in {self.knowledge_base_path}")
+            return documents
+
+        for file_path in jsonl_files:
+            logger.debug(f"Processing file: {file_path.name}")
             try:
                 with open(file_path, 'r', encoding='utf-8') as file:
-                    # Procesar cada línea del archivo JSONL
                     for line_number, line in enumerate(file, 1):
                         line = line.strip()
-                        if not line: # Saltar líneas completamente vacías
+                        if not line:
                             continue
 
                         try:
                             data: Dict[str, Any] = json.loads(line)
-                            # Asegurarse de que el campo 'text' existe y no está vacío
                             if 'text' in data and data['text'].strip():
-                                # Crear un objeto Document para LangChain
-                                # page_content: Contenido principal del documento (el texto)
-                                # metadata: Información adicional (origen, línea, etiquetas, etc.)
                                 document = Document(
                                     page_content=data['text'],
                                     metadata={
-                                        # Incluir todos los campos del JSON excepto 'text' como metadatos
-                                        **{k: v for k, v in data.items() if k != 'text'},
-                                        'source_file': str(file_path.name), # Nombre del archivo de origen
-                                        'line_number': line_number # Número de línea en el archivo
+                                        **{k: v for k, v in data.items() if
+                                           k != 'text'},
+                                        'source_file': str(file_path.name),
+                                        'line_number': line_number
                                     }
                                 )
                                 documents.append(document)
                             else:
-                                print(f"Advertencia: La línea {line_number} en {file_path.name} no contiene texto válido ('text' vacío o faltante). Ignorada.")
+                                logger.warning(
+                                    f"Empty text in {file_path.name}:{line_number}")
 
                         except json.JSONDecodeError:
-                            print(f"Error: No se pudo parsear JSON en {file_path.name}:{line_number}. La línea fue ignorada.")
+                            logger.error(
+                                f"Invalid JSON in {file_path.name}:{line_number}")
                         except Exception as e:
-                            print(f"Error inesperado procesando la línea {line_number} en {file_path.name}: {e}. Línea ignorada.")
+                            logger.error(
+                                f"Error processing line {line_number} in {file_path.name}: {e}")
 
             except FileNotFoundError:
-                print(f"Advertencia: Archivo no encontrado - {file_path}. Saltando.")
+                logger.warning(f"File not found: {file_path}")
             except Exception as e:
-                print(f"Error al leer el archivo {file_path}: {e}. Archivo saltado.")
+                logger.error(f"Error reading file {file_path}: {e}")
 
-        print(f"Total de documentos de LangChain cargados y formateados: {len(documents)}")
+        logger.info(
+            f"Loaded {len(documents)} documents from {len(jsonl_files)} files")
         return documents
 
     def _split_documents(self, documents: List[Document]) -> List[Document]:
-        """
-        Divide la lista de documentos de LangChain en fragmentos (chunks).
-        Basado en análisis de chunking, se usa RecursiveCharacterTextSplitter
-        con un tamaño de chunk de 400 caracteres y sin solapamiento.
-        """
+        """Divide documentos en chunks optimizados para RAG."""
         if not documents:
-            print("No hay documentos para dividir en chunks.")
+            logger.warning("No documents to split")
             return []
 
-        print(f"Dividiendo {len(documents)} documentos en chunks (chunk_size=400, chunk_overlap=0)...")
+        logger.info(
+            f"Splitting {len(documents)} documents (chunk_size=400, overlap=0)")
 
-        # Inicializar el splitter recursivo de caracteres
-        # Busca separadores como saltos de línea para dividir texto
-        # chunk_size: Tamaño máximo aproximado de cada chunk en unidades de length_function (caracteres)
-        # chunk_overlap: Cuántos caracteres se repiten al inicio del siguiente chunk
-        # length_function: Cómo medir el tamaño (len para caracteres)
+        # Sin overlap para mejor IoU en RAG
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=400,
-            chunk_overlap=0, # Sin solapamiento según recomendación para mejorar IoU
+            chunk_overlap=0,
             length_function=len
         )
 
-        # Aplicar el splitter a la lista de documentos
         chunks = text_splitter.split_documents(documents)
-
-        print(f"Total de chunks creados: {len(chunks)}")
+        logger.info(f"Created {len(chunks)} chunks")
         return chunks
 
     def _create_faiss_index(self, chunks: List[Document]) -> FAISS:
-        """
-        Crea un índice FAISS (Facebook AI Similarity Search) a partir de los chunks.
-        Utiliza los embeddings de Google GenAI para generar las representaciones vectoriales.
-        """
+        """Crea índice FAISS con embeddings de Google GenAI."""
         if not chunks:
-            raise ValueError("No hay chunks disponibles para crear el índice FAISS.")
+            logger.error("No chunks available for FAISS index")
+            raise ValueError(
+                "No hay chunks disponibles para crear el índice FAISS.")
 
-        print(f"Creando índice FAISS a partir de {len(chunks)} chunks usando embeddings de Google GenAI...")
+        logger.info(f"Creating FAISS index from {len(chunks)} chunks")
 
-        # Crear el vector store FAISS directamente desde los chunks y el modelo de embeddings.
-        # FAISS.from_documents maneja la generación de embeddings para cada chunk internamente.
         try:
             vector_store = FAISS.from_documents(chunks, self.embeddings)
-            print("Índice FAISS creado exitosamente.")
+            logger.info("FAISS index created successfully")
             return vector_store
         except Exception as e:
-            print(f"Error al crear el índice FAISS: {e}")
-            raise # Re-lanzar la excepción si falla la creación del índice
-
+            logger.error(f"Failed to create FAISS index: {e}")
+            raise
 
     def _save_vector_store(self, vector_store: FAISS):
-        """
-        Guarda el índice FAISS y su información asociada localmente en el disco.
-        Se guarda en el directorio especificado durante la inicialización.
-        """
-        print(f"Guardando índice FAISS en el directorio: {self.vector_store_path}...")
+        """Guarda índice FAISS en disco."""
+        logger.info(f"Saving FAISS index to: {self.vector_store_path}")
         try:
-            # save_local guarda varios archivos (index, docstore, etc.) necesarios para cargar el índice
             vector_store.save_local(self.vector_store_path)
-            print("Índice FAISS guardado exitosamente.")
+            logger.info("FAISS index saved successfully")
         except Exception as e:
-            print(f"Error al intentar guardar el índice FAISS en {self.vector_store_path}: {e}")
-            raise # Re-lanzar la excepción para indicar que el proceso falló
-
+            logger.error(f"Failed to save FAISS index: {e}")
+            raise
 
     def process_and_save_vector_store(self):
-        """
-        Método principal para ejecutar el pipeline de procesamiento:
-        1. Carga documentos de origen desde JSONL.
-        2. Divide los documentos en chunks.
-        3. Crea el índice FAISS usando embeddings.
-        4. Guarda el índice FAISS en disco.
-        """
-        print("\n--- Iniciando Proceso de Construcción y Guardado del Vector Store FAISS ---")
+        """Pipeline principal: carga → split → embeddings → save."""
+        logger.info("Starting RAG vector store processing pipeline")
+
         try:
-            # Paso 1: Cargar documentos
             documents = self._load_documents()
             if not documents:
-                print("Proceso terminado: No se cargaron documentos válidos para procesar.")
+                logger.warning("No valid documents loaded, stopping process")
                 return
 
-            # Paso 2: Dividir documentos en chunks
             chunks = self._split_documents(documents)
             if not chunks:
-                 print("Proceso terminado: No se crearon chunks a partir de los documentos.")
-                 return
+                logger.warning("No chunks created, stopping process")
+                return
 
-            # Paso 3: Crear el índice FAISS
             vector_store = self._create_faiss_index(chunks)
-
-            # Paso 4: Guardar el índice FAISS
             self._save_vector_store(vector_store)
 
-            print("\n--- Proceso de Construcción y Guardado del Vector Store Completado Exitosamente ---")
+            logger.info("RAG vector store processing completed successfully")
 
         except ValueError as ve:
-            # Errores esperados como falta de API Key o datos
-            print(f"\nError de Configuración o Datos: {ve}")
-            print("--- Proceso Fallido ---")
+            logger.error(f"Configuration/Data error: {ve}")
+            raise
         except Exception as e:
-            # Capturar cualquier otro error inesperado
-            print(f"\nOcurrió un Error Inesperado Durante el Proceso: {e}")
-            print("--- Proceso Fallido ---")
+            logger.error(f"Unexpected error in RAG processing: {e}")
+            raise

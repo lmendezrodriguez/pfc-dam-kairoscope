@@ -1,5 +1,5 @@
-# backend_django/api/views.py
 import json
+import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -7,17 +7,20 @@ from .firebase_config import initialize_firebase, verify_id_token
 from .models import UserProfile, Deck, Card
 from .core.deck_generator import DeckGenerator
 
+logger = logging.getLogger('api.views')
+
 # Inicializar Firebase al cargar el módulo
 initialize_firebase()
 
 
 def get_or_create_user_profile(firebase_uid):
-    """Obtiene o crea un UserProfile basado en el firebase_uid"""
+    """Obtiene o crea UserProfile por firebase_uid."""
     try:
         user_profile = UserProfile.objects.get(firebase_uid=firebase_uid)
+        logger.debug(f"Found existing user profile: {firebase_uid}")
     except UserProfile.DoesNotExist:
-        # Si no existe, lo creamos
         user_profile = UserProfile.objects.create(firebase_uid=firebase_uid)
+        logger.info(f"Created new user profile: {firebase_uid}")
 
     return user_profile
 
@@ -25,28 +28,47 @@ def get_or_create_user_profile(firebase_uid):
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_deck(request):
+    """Crea una baraja de estrategias personalizadas."""
+    logger.info("Deck creation request received")
+
     try:
-        # Parsear el JSON del body
         data = json.loads(request.body)
+        logger.debug(f"Request data keys: {list(data.keys())}")
 
-        # Obtener el token
+        # Validar token
         token = data.get('token')
-
         if not token:
+            logger.warning("Request missing authentication token")
             return JsonResponse({'error': 'Token requerido'}, status=400)
 
-        # Verificar el token con Firebase
         firebase_uid = verify_id_token(token)
-
         if not firebase_uid:
+            logger.warning("Invalid Firebase token provided")
             return JsonResponse({'error': 'Token inválido'}, status=401)
 
-        # Obtener parámetros de generación
+        logger.info(f"Authenticated user: {firebase_uid}")
+
+        # Extraer parámetros de generación
         discipline = data.get('discipline', 'Arte')
         block_description = data.get('blockDescription', 'Bloqueo general')
         chosen_color = data.get('color', '#000000')
 
-        # Generar la baraja usando DeckGenerator
+        logger.debug(
+            f"Generation params - discipline: {discipline}, color: {chosen_color}")
+
+        # Verificar límite de barajas antes de generar (optimización)
+        user_profile = get_or_create_user_profile(firebase_uid)
+        current_deck_count = user_profile.decks.count()
+
+        if current_deck_count >= 8:
+            logger.warning(
+                f"User {firebase_uid} exceeded deck limit ({current_deck_count}/8)")
+            return JsonResponse({
+                'error': 'Has alcanzado el límite de 8 barajas'
+            }, status=400)
+
+        # Generar baraja usando LLM/RAG
+        logger.info("Starting deck generation with LLM")
         generator = DeckGenerator()
         generated_deck = generator.generate_deck(
             discipline=discipline,
@@ -54,17 +76,9 @@ def create_deck(request):
             color=chosen_color,
             num_cards=123
         )
+        logger.info(f"Generated deck: {generated_deck['name']}")
 
-        # Obtener o crear el UserProfile
-        user_profile = get_or_create_user_profile(firebase_uid)
-
-        # Verificar límite de barajas (8 máximo por usuario)
-        if user_profile.decks.count() >= 8:
-            return JsonResponse({
-                'error': 'Has alcanzado el límite de 8 barajas'
-            }, status=400)
-
-        # Crear Deck en la base de datos
+        # Persistir en base de datos
         deck = Deck.objects.create(
             user=user_profile,
             name=generated_deck['name'],
@@ -73,14 +87,14 @@ def create_deck(request):
             chosen_color=chosen_color
         )
 
-        # Crear Cards en la base de datos
-        for strategy_text in generated_deck['strategies']:
-            Card.objects.create(
-                deck=deck,
-                text=strategy_text
-            )
+        # Crear cartas en batch (más eficiente)
+        cards = [
+            Card(deck=deck, text=strategy_text)
+            for strategy_text in generated_deck['strategies']
+        ]
+        Card.objects.bulk_create(cards)
+        logger.info(f"Created deck {deck.id} with {len(cards)} cards")
 
-        # Devolver respuesta en formato correcto
         return JsonResponse({
             'status': 'success',
             'message': 'Deck creado exitosamente',
@@ -93,6 +107,8 @@ def create_deck(request):
         }, status=201)
 
     except json.JSONDecodeError:
+        logger.error("Invalid JSON in request body")
         return JsonResponse({'error': 'JSON inválido'}, status=400)
     except Exception as e:
+        logger.error(f"Unexpected error creating deck: {e}")
         return JsonResponse({'error': str(e)}, status=500)
