@@ -3,16 +3,15 @@ import json
 import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-from django.conf import settings
 
+from django.conf import settings
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_core.vectorstores import VectorStoreRetriever
 
 logger = logging.getLogger('api.core')
-from langchain_community.vectorstores import FAISS # Usar langchain_community para componentes de terceros
-from langchain_core.vectorstores import VectorStoreRetriever
 
 
 class RAGProcessor:
@@ -21,28 +20,20 @@ class RAGProcessor:
     def __init__(self,
                  knowledge_base_path: Optional[Path] = None,
                  vector_store_path: Optional[Path] = None):
-
-        # Configurar las rutas usando Path para manejo robusto de directorios
         self.knowledge_base_path = knowledge_base_path or Path(settings.BASE_DIR) / "api" / "knowledge_base"
         self.vector_store_path = vector_store_path or Path(settings.BASE_DIR) / "api" / "vector_store"
 
-        # Asegurarse de que el directorio donde se guardará el vector store exista
         os.makedirs(self.vector_store_path, exist_ok=True)
         logger.info(f"Knowledge base: {self.knowledge_base_path}")
         logger.info(f"Vector store: {self.vector_store_path}")
 
-        # Verificar que la API Key de Google esté disponible en el entorno
         api_key = os.getenv('GOOGLE_API_KEY')
         if not api_key:
             logger.error("GOOGLE_API_KEY not found in environment")
-            raise ValueError(
-                "GOOGLE_API_KEY no encontrada en variables de entorno.")
+            raise ValueError("GOOGLE_API_KEY no encontrada en variables de entorno.")
 
-        # Inicializar el modelo de Embeddings de Google GenAI con LangChain
-        # LangChain GoogleGenerativeAIEmbeddings lee GOOGLE_API_KEY automáticamente
         try:
-            self.embeddings = GoogleGenerativeAIEmbeddings(
-                model="models/text-embedding-004")
+            self.embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
             logger.info("Google GenAI embeddings initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize embeddings: {e}")
@@ -54,11 +45,14 @@ class RAGProcessor:
         logger.info(f"Loading documents from {self.knowledge_base_path}")
 
         jsonl_files = list(self.knowledge_base_path.glob("*.jsonl"))
-        # Recorrer todos los archivos con extensión .jsonl en el directorio especificado
+        if not jsonl_files:
+            logger.warning(f"No JSONL files found in {self.knowledge_base_path}")
+            return documents
+
         for file_path in jsonl_files:
+            logger.debug(f"Processing file: {file_path.name}")
             try:
                 with open(file_path, 'r', encoding='utf-8') as file:
-                    # Procesar cada línea del archivo JSONL
                     for line_number, line in enumerate(file, 1):
                         line = line.strip()
                         if not line:
@@ -70,31 +64,26 @@ class RAGProcessor:
                                 document = Document(
                                     page_content=data['text'],
                                     metadata={
-                                        # Incluir todos los campos del JSON excepto 'text' como metadatos
                                         **{k: v for k, v in data.items() if k != 'text'},
-                                        'source_file': str(file_path.name), # Nombre del archivo de origen
-                                        'line_number': line_number # Número de línea en el archivo
+                                        'source_file': str(file_path.name),
+                                        'line_number': line_number
                                     }
                                 )
                                 documents.append(document)
                             else:
-                                logger.warning(
-                                    f"Empty text in {file_path.name}:{line_number}")
+                                logger.warning(f"Empty text in {file_path.name}:{line_number}")
 
                         except json.JSONDecodeError:
-                            logger.error(
-                                f"Invalid JSON in {file_path.name}:{line_number}")
+                            logger.error(f"Invalid JSON in {file_path.name}:{line_number}")
                         except Exception as e:
-                            logger.error(
-                                f"Error processing line {line_number} in {file_path.name}: {e}")
+                            logger.error(f"Error processing line {line_number} in {file_path.name}: {e}")
 
             except FileNotFoundError:
                 logger.warning(f"File not found: {file_path}")
             except Exception as e:
                 logger.error(f"Error reading file {file_path}: {e}")
 
-        logger.info(
-            f"Loaded {len(documents)} documents from {len(jsonl_files)} files")
+        logger.info(f"Loaded {len(documents)} documents from {len(jsonl_files)} files")
         return documents
 
     def _split_documents(self, documents: List[Document]) -> List[Document]:
@@ -103,17 +92,12 @@ class RAGProcessor:
             logger.warning("No documents to split")
             return []
 
-        logger.info(
-            f"Splitting {len(documents)} documents (chunk_size=400, overlap=0)")
+        logger.info(f"Splitting {len(documents)} documents (chunk_size=400, overlap=0)")
 
-        # Inicializar el splitter recursivo de caracteres
-        # Busca separadores como saltos de línea para dividir texto
-        # chunk_size: Tamaño máximo aproximado de cada chunk en unidades de length_function (caracteres)
-        # chunk_overlap: Cuántos caracteres se repiten al inicio del siguiente chunk
-        # length_function: Cómo medir el tamaño (len para caracteres)
+        # Sin overlap para mejor IoU en RAG
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=400,
-            chunk_overlap=0, # Sin solapamiento según recomendación para mejorar IoU
+            chunk_overlap=0,
             length_function=len
         )
 
@@ -125,13 +109,10 @@ class RAGProcessor:
         """Crea índice FAISS con embeddings de Google GenAI."""
         if not chunks:
             logger.error("No chunks available for FAISS index")
-            raise ValueError(
-                "No hay chunks disponibles para crear el índice FAISS.")
+            raise ValueError("No hay chunks disponibles para crear el índice FAISS.")
 
         logger.info(f"Creating FAISS index from {len(chunks)} chunks")
 
-        # Crear el vector store FAISS directamente desde los chunks y el modelo de embeddings.
-        # FAISS.from_documents maneja la generación de embeddings para cada chunk internamente.
         try:
             vector_store = FAISS.from_documents(chunks, self.embeddings)
             logger.info("FAISS index created successfully")
@@ -144,8 +125,6 @@ class RAGProcessor:
         """Guarda índice FAISS en disco."""
         logger.info(f"Saving FAISS index to: {self.vector_store_path}")
         try:
-            # save_local guarda varios archivos (index, docstore, etc.)
-            # necesarios para cargar el índice
             vector_store.save_local(self.vector_store_path)
             logger.info("FAISS index saved successfully")
         except Exception as e:
@@ -157,22 +136,17 @@ class RAGProcessor:
         logger.info("Starting RAG vector store processing pipeline")
 
         try:
-            # Paso 1: Cargar documentos
             documents = self._load_documents()
             if not documents:
                 logger.warning("No valid documents loaded, stopping process")
                 return
 
-            # Paso 2: Dividir documentos en chunks
             chunks = self._split_documents(documents)
             if not chunks:
                 logger.warning("No chunks created, stopping process")
                 return
 
-            # Paso 3: Crear el índice FAISS
             vector_store = self._create_faiss_index(chunks)
-
-            # Paso 4: Guardar el índice FAISS
             self._save_vector_store(vector_store)
 
             logger.info("RAG vector store processing completed successfully")
@@ -181,71 +155,47 @@ class RAGProcessor:
             logger.error(f"Configuration/Data error: {ve}")
             raise
         except Exception as e:
-            # Capturar cualquier otro error inesperado
-            print(f"\nOcurrió un Error Inesperado Durante el Proceso: {e}")
-            print("--- Proceso Fallido ---")
+            logger.error(f"Unexpected error in RAG processing: {e}")
+            raise
 
     @staticmethod
     def _initialize_embeddings() -> GoogleGenerativeAIEmbeddings:
-        """Inicializa y devuelve el modelo de embeddings de Google GenAI."""
+        """Inicializa modelo de embeddings de Google GenAI."""
         api_key = os.getenv('GOOGLE_API_KEY')
         if not api_key:
+            logger.error("GOOGLE_API_KEY not found for embeddings initialization")
             raise ValueError("GOOGLE_API_KEY no encontrada en variables de entorno.")
 
         try:
-            # model="models/text-embedding-004" (o el que uses)
             embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
-            print("Embeddings de Google Generative AI (models/text-embedding-004) inicializados.")
+            logger.debug("Embeddings model initialized for loading")
             return embeddings
         except Exception as e:
-             print(f"Error al inicializar GoogleGenerativeAIEmbeddings: {e}")
-             raise # Re-lanzar la excepción
+            logger.error(f"Failed to initialize embeddings for loading: {e}")
+            raise
 
     @classmethod
-    def load_faiss_retriever(cls,
-                             vector_store_path: Optional[Path] = None
-                             ) -> VectorStoreRetriever:
-        """
-        Carga un índice FAISS guardado y devuelve un retriever de LangChain.
-
-        Args:
-            vector_store_path: Ruta al directorio donde se guardó el índice FAISS.
-                               Por defecto: settings.BASE_DIR / "api" / "vector_store".
-
-        Returns:
-            Un objeto VectorStoreRetriever configurado para usar el índice cargado.
-
-        Raises:
-            FileNotFoundError: Si el índice FAISS no se encuentra en la ruta especificada.
-            Exception: Si ocurre un error durante la carga o inicialización.
-        """
+    def load_faiss_retriever(cls, vector_store_path: Optional[Path] = None) -> VectorStoreRetriever:
+        """Carga índice FAISS y devuelve retriever."""
         store_path = vector_store_path or Path(settings.BASE_DIR) / "api" / "vector_store"
-        print(f"Intentando cargar el índice FAISS desde: {store_path}")
+        logger.info(f"Loading FAISS index from: {store_path}")
 
-        # Asegurarse de que el directorio existe antes de intentar cargar
         if not store_path.exists():
-             raise FileNotFoundError(f"Directorio del vector store no encontrado: {store_path}")
+            logger.error(f"Vector store directory not found: {store_path}")
+            raise FileNotFoundError(f"Directorio del vector store no encontrado: {store_path}")
 
         try:
-            # Inicializar el mismo modelo de embeddings que se usó para guardar
             embeddings_model = cls._initialize_embeddings()
 
-            # Cargar el vector store FAISS
-            vector_store = FAISS.load_local(folder_path=store_path,
-                                            embeddings=embeddings_model,
-                                            allow_dangerous_deserialization=True) # Necesario para index.pkl
+            vector_store = FAISS.load_local(
+                folder_path=store_path,
+                embeddings=embeddings_model,
+                allow_dangerous_deserialization=True
+            )
 
-            print("Índice FAISS cargado exitosamente.")
+            logger.info("FAISS index loaded successfully")
+            return vector_store.as_retriever(search_kwargs={"k": 8})
 
-            # Devolver el vector store como un retriever
-            # Puedes configurar parámetros del retriever aquí si es necesario (ej: search_kwargs={"k": N})
-            return vector_store.as_retriever()
-
-        except FileNotFoundError:
-             # Relanzar FileNotFoundError específicamente si es el problema
-             raise
         except Exception as e:
-            print(f"Error al intentar cargar el índice FAISS desde {store_path}: {e}")
-            raise # Re-lanzar otras excepciones de carga
-            logger.error(f"Unexpected error in RAG processing: {e}")
+            logger.error(f"Failed to load FAISS index from {store_path}: {e}")
             raise
