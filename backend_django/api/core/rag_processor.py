@@ -8,6 +8,7 @@ from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS # Usar langchain_community para componentes de terceros
+from langchain_core.vectorstores import VectorStoreRetriever
 
 
 class RAGProcessor:
@@ -172,7 +173,8 @@ class RAGProcessor:
         """
         print(f"Guardando índice FAISS en el directorio: {self.vector_store_path}...")
         try:
-            # save_local guarda varios archivos (index, docstore, etc.) necesarios para cargar el índice
+            # save_local guarda varios archivos (index, docstore, etc.)
+            # necesarios para cargar el índice
             vector_store.save_local(self.vector_store_path)
             print("Índice FAISS guardado exitosamente.")
         except Exception as e:
@@ -218,3 +220,66 @@ class RAGProcessor:
             # Capturar cualquier otro error inesperado
             print(f"\nOcurrió un Error Inesperado Durante el Proceso: {e}")
             print("--- Proceso Fallido ---")
+
+    @staticmethod
+    def _initialize_embeddings() -> GoogleGenerativeAIEmbeddings:
+        """Inicializa y devuelve el modelo de embeddings de Google GenAI."""
+        api_key = os.getenv('GOOGLE_API_KEY')
+        if not api_key:
+            raise ValueError("GOOGLE_API_KEY no encontrada en variables de entorno.")
+
+        try:
+            # model="models/text-embedding-004" (o el que uses)
+            embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+            print("Embeddings de Google Generative AI (models/text-embedding-004) inicializados.")
+            return embeddings
+        except Exception as e:
+             print(f"Error al inicializar GoogleGenerativeAIEmbeddings: {e}")
+             raise # Re-lanzar la excepción
+
+    @classmethod
+    def load_faiss_retriever(cls,
+                             vector_store_path: Optional[Path] = None
+                             ) -> VectorStoreRetriever:
+        """
+        Carga un índice FAISS guardado y devuelve un retriever de LangChain.
+
+        Args:
+            vector_store_path: Ruta al directorio donde se guardó el índice FAISS.
+                               Por defecto: settings.BASE_DIR / "api" / "vector_store".
+
+        Returns:
+            Un objeto VectorStoreRetriever configurado para usar el índice cargado.
+
+        Raises:
+            FileNotFoundError: Si el índice FAISS no se encuentra en la ruta especificada.
+            Exception: Si ocurre un error durante la carga o inicialización.
+        """
+        store_path = vector_store_path or Path(settings.BASE_DIR) / "api" / "vector_store"
+        print(f"Intentando cargar el índice FAISS desde: {store_path}")
+
+        # Asegurarse de que el directorio existe antes de intentar cargar
+        if not store_path.exists():
+             raise FileNotFoundError(f"Directorio del vector store no encontrado: {store_path}")
+
+        try:
+            # Inicializar el mismo modelo de embeddings que se usó para guardar
+            embeddings_model = cls._initialize_embeddings()
+
+            # Cargar el vector store FAISS
+            vector_store = FAISS.load_local(folder_path=store_path,
+                                            embeddings=embeddings_model,
+                                            allow_dangerous_deserialization=True) # Necesario para index.pkl
+
+            print("Índice FAISS cargado exitosamente.")
+
+            # Devolver el vector store como un retriever
+            # Puedes configurar parámetros del retriever aquí si es necesario (ej: search_kwargs={"k": N})
+            return vector_store.as_retriever()
+
+        except FileNotFoundError:
+             # Relanzar FileNotFoundError específicamente si es el problema
+             raise
+        except Exception as e:
+            print(f"Error al intentar cargar el índice FAISS desde {store_path}: {e}")
+            raise # Re-lanzar otras excepciones de carga
