@@ -25,9 +25,17 @@ def get_or_create_user_profile(firebase_uid):
 
     return user_profile
 
+@csrf_exempt
+def deck_handler(request):
+    """Maneja GET (listar) y POST (crear) para /api/deck/"""
+    if request.method == 'GET':
+        return list_decks(request)
+    elif request.method == 'POST':
+        return create_deck(request)
+    else:
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 @csrf_exempt # Deshabilitar CSRF para pruebas locales
-@require_http_methods(["POST"])
 def create_deck(request):
     """Crea baraja de estrategias personalizadas con autenticación Firebase."""
     logger.info("Deck creation request received")
@@ -122,10 +130,10 @@ def create_deck(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@require_http_methods(["GET"]) # maneja automáticamente method not supported
 def list_decks(request):
     """Lista las barajas del usuario autenticado."""
     logger.info("Deck list request received")
+    logger.debug(f"Headers received: {dict(request.headers)}")
 
     try:
         # Autenticación Firebase
@@ -167,3 +175,5 @@ def list_decks(request):
     except Exception as e:
         logger.error(f"Error listing decks: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
+
