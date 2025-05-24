@@ -111,6 +111,13 @@ public class DeckCreationFragment extends Fragment {
             buttonCreateDeck.setEnabled(!isLoading);
         });
 
+        // Observar navegación a la lista de barajas
+        viewModel.getShouldNavigateToList().observe(getViewLifecycleOwner(), shouldNavigate -> {
+            if (shouldNavigate != null && shouldNavigate) {
+                navController.navigate(R.id.action_deckCreationFragment_to_deckListFragment);
+            }
+        });
+
         // Observar mensajes
         viewModel.getMessage().observe(getViewLifecycleOwner(), message -> {
             if (message != null && !message.isEmpty()) {

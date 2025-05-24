@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.JsonObject;
 import com.lmr.kairoscope.data.model.DeckCreationRequest;
+import com.lmr.kairoscope.data.model.DeckListResponse;
 import com.lmr.kairoscope.data.model.DeckResponse;
 import com.lmr.kairoscope.data.network.ApiService;
 import com.lmr.kairoscope.data.network.RetrofitClient;
@@ -22,6 +23,7 @@ public class DeckRepository {
 
     // LiveData para comunicar resultados al ViewModel
     private final MutableLiveData<DeckResponse> deckCreationResult = new MutableLiveData<>();
+    private final MutableLiveData<DeckListResponse> deckListResult = new MutableLiveData<>();
 
     public DeckRepository() {
         // Obtenemos la instancia de ApiService usando RetrofitClient
@@ -32,6 +34,11 @@ public class DeckRepository {
     public LiveData<DeckResponse> getDeckCreationResult() {
         return deckCreationResult;
     }
+
+    public LiveData<DeckListResponse> getDeckListResult() {
+        return deckListResult;
+    }
+
 
     // Método para crear una baraja
     public void createDeck(DeckCreationRequest request) {
@@ -86,6 +93,47 @@ public class DeckRepository {
                         // Error al obtener el token
                         deckCreationResult.postValue(new DeckResponse("error",
                                 "Error al obtener token de autenticación"));
+                    }
+                });
+    }
+
+    // NUEVO: Método para obtener lista de barajas
+    public void getDeckList() {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+
+        if (currentUser == null) {
+            deckListResult.postValue(new DeckListResponse("error", null, 0));
+            return;
+        }
+
+        currentUser.getIdToken(true)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        String idToken = task.getResult().getToken();
+                        String authHeader = "Bearer " + idToken;
+
+                        Call<DeckListResponse> call = apiService.getDeckList(authHeader);
+
+                        call.enqueue(new Callback<DeckListResponse>() {
+                            @Override
+                            public void onResponse(Call<DeckListResponse> call, Response<DeckListResponse> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    deckListResult.postValue(response.body());
+                                } else {
+                                    DeckListResponse errorResponse = new DeckListResponse("error", null, 0);
+                                    deckListResult.postValue(errorResponse);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<DeckListResponse> call, Throwable t) {
+                                DeckListResponse errorResponse = new DeckListResponse("error", null, 0);
+                                deckListResult.postValue(errorResponse);
+                            }
+                        });
+
+                    } else {
+                        deckListResult.postValue(new DeckListResponse("error", null, 0));
                     }
                 });
     }
