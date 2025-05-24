@@ -12,7 +12,7 @@ import retrofit2.http.POST;
 public interface ApiService {
 
     // Endpoint para generar una baraja (POST /api/decks/)
-    @POST("api/decks/")
+    @POST("api/deck/")
     @Headers("Content-Type: application/json")
     Call<DeckResponse> createDeck(@Body JsonObject requestBody);
 
