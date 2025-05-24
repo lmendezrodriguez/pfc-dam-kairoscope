@@ -116,7 +116,6 @@ venv.bak
 # Visual Studio Code settings
 .vscode/
 
-
 # Mac OS system files
 .DS_Store
 .AppleDouble
@@ -185,7 +184,6 @@ captures/
 secrets.properties
 secrets.xml
 
-
 # Sensitive configuration (adjust as needed)
 # config.properties
 
@@ -210,6 +208,9 @@ nbproject/
 # vector_store/chroma.sqlite3 # Example for ChromaDB local file
 # vector_store/faiss.index # Example for FAISS index
 # Adjust based on your chosen vector store if it creates local files
+
+# Vector store directories
+**/backend_django/api/vector_store/
 
 # LLM API Keys or other secrets stored insecurely (should not be here ideally)
 # credentials.json # Example
