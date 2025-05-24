@@ -1,36 +1,154 @@
 package com.lmr.kairoscope.view.fragment;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.lmr.kairoscope.R; // Importa la clase R para poder referenciar tus layouts
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.snackbar.Snackbar;
 
-public class DeckListFragment extends Fragment {
+import com.lmr.kairoscope.R;
+import com.lmr.kairoscope.adapters.DeckListAdapter;
+import com.lmr.kairoscope.data.model.Deck;
+import com.lmr.kairoscope.data.repository.DeckRepository;
+import com.lmr.kairoscope.viewmodel.DeckListViewModel;
 
-    // En pasos futuros, aquí declararemos referencias a elementos UI (EditText, Button)
-    // y a nuestro AuthViewModel.
+public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeckClickListener {
 
-    // El método onCreateView es donde inflamos el layout XML del fragmento
+    private static final String TAG = "DeckListFragment";
+
+    // UI Elements
+    private RecyclerView recyclerViewDecks;
+    private LinearLayout layoutEmptyState;
+    private FloatingActionButton fabCreateDeck;
+    private CircularProgressIndicator progressBar;
+
+    // ViewModel y Adapter
+    private DeckListViewModel viewModel;
+    private DeckListAdapter adapter;
+
+    // Navigation
+    private NavController navController;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        // R.layout.fragment_login hace referencia al archivo XML que creaste antes
         View view = inflater.inflate(R.layout.fragment_deck_list, container, false);
 
-        // Aquí es donde normalmente encontrarías referencias a los elementos de UI
-        // usando view.findViewById(R.id.alguna_id_en_el_layout);
-        // Por ahora, lo dejamos simple.
+        // Obtener referencias UI
+        recyclerViewDecks = view.findViewById(R.id.recyclerViewDecks);
+        layoutEmptyState = view.findViewById(R.id.layoutEmptyState);
+        fabCreateDeck = view.findViewById(R.id.fabCreateDeck);
+        progressBar = view.findViewById(R.id.progressBar);
 
-        // Aquí también inicializarías tu ViewModel y empezarías a observar LiveData
-
-        return view; // Devolvemos la vista inflada
+        return view;
     }
 
-    // Otros métodos de ciclo de vida del fragmento (como onViewCreated, onActivityCreated, etc.)
-    // se pueden añadir aquí si son necesarios para tareas específicas.
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Obtener NavController
+        navController = NavHostFragment.findNavController(this);
+
+        // Inicializar ViewModel
+        DeckRepository repository = new DeckRepository();
+        viewModel = new ViewModelProvider(this, new DeckListViewModel.Factory(repository))
+                .get(DeckListViewModel.class);
+
+        // Configurar RecyclerView y Adapter
+        setupRecyclerView();
+
+        // Configurar observadores
+        setupObservers();
+
+        // Configurar listeners
+        setupListeners();
+
+        // Cargar datos inicial
+        viewModel.loadDeckList();
+    }
+
+    private void setupRecyclerView() {
+        adapter = new DeckListAdapter(this);
+        recyclerViewDecks.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerViewDecks.setAdapter(adapter);
+    }
+
+    private void setupObservers() {
+        // Observar estado de carga
+        viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        });
+
+        // Observar mensajes
+        viewModel.getMessage().observe(getViewLifecycleOwner(), message -> {
+            if (message != null && !message.isEmpty()) {
+                Snackbar.make(requireView(), message, Snackbar.LENGTH_SHORT).show();
+                viewModel.clearMessage();
+            }
+        });
+
+        // Observar lista de barajas
+        viewModel.getDeckListResult().observe(getViewLifecycleOwner(), response -> {
+            if (response != null && response.isSuccess()) {
+                adapter.updateDeckList(response.getDecks());
+
+                // Mostrar/ocultar estado vacío
+                if (response.getDecks() != null && !response.getDecks().isEmpty()) {
+                    recyclerViewDecks.setVisibility(View.VISIBLE);
+                    layoutEmptyState.setVisibility(View.GONE);
+                } else {
+                    recyclerViewDecks.setVisibility(View.GONE);
+                    layoutEmptyState.setVisibility(View.VISIBLE);
+                }
+            } else {
+                // Error - mostrar estado vacío
+                recyclerViewDecks.setVisibility(View.GONE);
+                layoutEmptyState.setVisibility(View.VISIBLE);
+                adapter.updateDeckList(null);
+            }
+        });
+    }
+
+    private void setupListeners() {
+        // FAB para crear nueva baraja
+        fabCreateDeck.setOnClickListener(v -> {
+            try {
+                navController.navigate(R.id.action_deckListFragment_to_deckCreationFragment);
+            } catch (Exception e) {
+                Log.e(TAG, "Navigation error to DeckCreation: " + e.getMessage());
+            }
+        });
+    }
+
+    @Override
+    public void onDeckClick(Deck deck) {
+        // TODO: Navegar a DeckViewFragment cuando lo implementemos
+        Log.d(TAG, "Deck clicked: " + deck.getName());
+        Snackbar.make(requireView(), "Seleccionaste: " + deck.getName(), Snackbar.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Limpiar referencias
+        recyclerViewDecks = null;
+        layoutEmptyState = null;
+        fabCreateDeck = null;
+        progressBar = null;
+        adapter = null;
+    }
 }
