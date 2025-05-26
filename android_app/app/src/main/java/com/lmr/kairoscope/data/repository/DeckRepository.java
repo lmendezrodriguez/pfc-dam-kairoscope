@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.JsonObject;
 import com.lmr.kairoscope.data.model.DeckCreationRequest;
+import com.lmr.kairoscope.data.model.DeckDetailResponse;
 import com.lmr.kairoscope.data.model.DeckListResponse;
 import com.lmr.kairoscope.data.model.DeckResponse;
 import com.lmr.kairoscope.data.network.ApiService;
@@ -24,6 +25,7 @@ public class DeckRepository {
     // LiveData para comunicar resultados al ViewModel
     private final MutableLiveData<DeckResponse> deckCreationResult = new MutableLiveData<>();
     private final MutableLiveData<DeckListResponse> deckListResult = new MutableLiveData<>();
+    private final MutableLiveData<DeckDetailResponse> deckDetailResult = new MutableLiveData<>();
 
     public DeckRepository() {
         // Obtenemos la instancia de ApiService usando RetrofitClient
@@ -38,6 +40,8 @@ public class DeckRepository {
     public LiveData<DeckListResponse> getDeckListResult() {
         return deckListResult;
     }
+
+    public LiveData<DeckDetailResponse> getDeckDetailResult() { return deckDetailResult; }
 
 
     // Método para crear una baraja
@@ -134,6 +138,46 @@ public class DeckRepository {
 
                     } else {
                         deckListResult.postValue(new DeckListResponse("error", null, 0));
+                    }
+                });
+    }
+
+    public void getDeckDetail(int deckId) {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+
+        if (currentUser == null) {
+            deckDetailResult.postValue(new DeckDetailResponse("error", null));
+            return;
+        }
+
+        currentUser.getIdToken(true)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        String idToken = task.getResult().getToken();
+                        String authHeader = "Bearer " + idToken;
+
+                        Call<DeckDetailResponse> call = apiService.getDeckDetail(deckId, authHeader);
+
+                        call.enqueue(new Callback<DeckDetailResponse>() {
+                            @Override
+                            public void onResponse(Call<DeckDetailResponse> call, Response<DeckDetailResponse> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    deckDetailResult.postValue(response.body());
+                                } else {
+                                    DeckDetailResponse errorResponse = new DeckDetailResponse("error", null);
+                                    deckDetailResult.postValue(errorResponse);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<DeckDetailResponse> call, Throwable t) {
+                                DeckDetailResponse errorResponse = new DeckDetailResponse("error", null);
+                                deckDetailResult.postValue(errorResponse);
+                            }
+                        });
+
+                    } else {
+                        deckDetailResult.postValue(new DeckDetailResponse("error", null));
                     }
                 });
     }
