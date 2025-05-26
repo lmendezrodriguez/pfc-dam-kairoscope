@@ -177,3 +177,74 @@ def list_decks(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+
+
+@csrf_exempt
+def deck_detail_handler(request, deck_id):
+    """Maneja GET (detalle) y DELETE para /api/deck/{deck_id}/"""
+    if request.method == 'GET':
+        return get_deck_detail(request, deck_id)
+    elif request.method == 'DELETE':
+        return delete_deck(request, deck_id)
+    else:
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+def get_deck_detail(request, deck_id):
+    """Obtiene detalles completos de una baraja con sus cartas."""
+    logger.info(f"Deck detail request for deck_id: {deck_id}")
+
+    try:
+        # Autenticación Firebase
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            logger.warning("Missing or invalid Authorization header")
+            return JsonResponse({'error': 'Token requerido'}, status=401)
+
+        token = auth_header.split(' ')[1]
+        firebase_uid = verify_id_token(token)
+        if not firebase_uid:
+            logger.warning("Invalid Firebase token provided")
+            return JsonResponse({'error': 'Token inválido'}, status=401)
+
+        logger.info(f"Getting deck detail for user: {firebase_uid}")
+
+        # Obtener user profile
+        user_profile = get_or_create_user_profile(firebase_uid)
+
+        # Obtener la baraja específica del usuario
+        try:
+            deck = user_profile.decks.get(id=deck_id)
+        except Deck.DoesNotExist:
+            logger.warning(f"Deck {deck_id} not found for user {firebase_uid}")
+            return JsonResponse({'error': 'Baraja no encontrada'}, status=404)
+
+        # Obtener todas las cartas de la baraja
+        cards = deck.cards.all()
+
+        # Serializar respuesta
+        deck_data = {
+            'id': deck.id,
+            'name': deck.name,
+            'discipline': deck.discipline,
+            'block_description': deck.block_description,
+            'chosen_color': deck.chosen_color,
+            'created_at': deck.created_at.isoformat(),
+            'card_count': len(cards),
+            'cards': [{'id': card.id, 'text': card.text} for card in cards]
+        }
+
+        return JsonResponse({
+            'status': 'success',
+            'deck': deck_data
+        })
+
+    except Exception as e:
+        logger.error(f"Error getting deck detail: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def delete_deck(request, deck_id):
+    """Elimina una baraja del usuario autenticado."""
+    # Implementaremos esto en el siguiente paso
+    return JsonResponse({'error': 'Not implemented yet'}, status=501)
