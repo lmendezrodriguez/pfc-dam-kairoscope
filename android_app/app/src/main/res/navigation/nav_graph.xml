@@ -45,7 +45,9 @@
         <action
             android:id="@+id/action_deckListFragment_to_deckCreationFragment"
             app:destination="@id/deckCreationFragment" />
-
+        <action
+            android:id="@+id/action_deckListFragment_to_deckDetailFragment"
+            app:destination="@id/deckDetailFragment" />
     </fragment>
 
     <fragment
@@ -58,6 +60,16 @@
             app:destination="@id/deckListFragment"
             app:popUpTo="@id/deckListFragment"
             app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/deckDetailFragment"
+        android:name="com.lmr.kairoscope.view.fragment.DeckDetailFragment"
+        android:label="Detalle de Baraja"
+        tools:layout="@layout/fragment_deck_detail">
+        <argument
+            android:name="deck_id"
+            app:argType="integer" />
     </fragment>
 
 </navigation>
