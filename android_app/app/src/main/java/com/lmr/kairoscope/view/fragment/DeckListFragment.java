@@ -136,9 +136,15 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
 
     @Override
     public void onDeckClick(Deck deck) {
-        // TODO: Navegar a DeckViewFragment cuando lo implementemos
-        Log.d(TAG, "Deck clicked: " + deck.getName());
-        Snackbar.make(requireView(), "Seleccionaste: " + deck.getName(), Snackbar.LENGTH_SHORT).show();
+        // Navegar a DeckDetailFragment pasando el ID de la baraja
+        try {
+            Bundle args = new Bundle();
+            args.putInt("deck_id", deck.getId());
+            navController.navigate(R.id.action_deckListFragment_to_deckDetailFragment, args);
+        } catch (Exception e) {
+            Log.e(TAG, "Navigation error to DeckDetail: " + e.getMessage());
+            Snackbar.make(requireView(), "Error al abrir la baraja", Snackbar.LENGTH_SHORT).show();
+        }
     }
 
     @Override
