@@ -246,5 +246,44 @@ def get_deck_detail(request, deck_id):
 
 def delete_deck(request, deck_id):
     """Elimina una baraja del usuario autenticado."""
-    # Implementaremos esto en el siguiente paso
-    return JsonResponse({'error': 'Not implemented yet'}, status=501)
+    logger.info(f"Deck delete request for deck_id: {deck_id}")
+
+    try:
+        # Autenticación Firebase
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            logger.warning("Missing or invalid Authorization header")
+            return JsonResponse({'error': 'Token requerido'}, status=401)
+
+        token = auth_header.split(' ')[1]
+        firebase_uid = verify_id_token(token)
+        if not firebase_uid:
+            logger.warning("Invalid Firebase token provided")
+            return JsonResponse({'error': 'Token inválido'}, status=401)
+
+        logger.info(f"Deleting deck for user: {firebase_uid}")
+
+        # Obtener user profile
+        user_profile = get_or_create_user_profile(firebase_uid)
+
+        # Obtener la baraja específica del usuario
+        try:
+            deck = user_profile.decks.get(id=deck_id)
+        except Deck.DoesNotExist:
+            logger.warning(f"Deck {deck_id} not found for user {firebase_uid}")
+            return JsonResponse({'error': 'Baraja no encontrada'}, status=404)
+
+        # Eliminar la baraja (las cartas se eliminan automáticamente por CASCADE)
+        deck_name = deck.name
+        deck.delete()
+        logger.info(
+            f"Deck '{deck_name}' deleted successfully for user {firebase_uid}")
+
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Baraja "{deck_name}" eliminada correctamente'
+        })
+
+    except Exception as e:
+        logger.error(f"Error deleting deck: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
