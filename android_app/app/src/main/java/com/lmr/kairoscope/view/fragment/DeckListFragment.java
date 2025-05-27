@@ -121,6 +121,12 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
                 adapter.updateDeckList(null);
             }
         });
+
+        viewModel.getDeckDeleteResult().observe(getViewLifecycleOwner(), result -> {
+            if (result != null && result.isSuccess()) {
+                Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupListeners() {
@@ -145,6 +151,20 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
             Log.e(TAG, "Navigation error to DeckDetail: " + e.getMessage());
             Snackbar.make(requireView(), "Error al abrir la baraja", Snackbar.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onDeckDelete(Deck deck) {
+        // Mostrar diálogo de confirmación
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Eliminar baraja")
+                .setMessage("¿Estás seguro de que quieres eliminar \"" + deck.getName() + "\"? Esta acción no se puede deshacer.")
+                .setPositiveButton("Eliminar", (dialog, which) -> {
+                    // Confirmar eliminación
+                    viewModel.deleteDeck(deck.getId());
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     @Override
