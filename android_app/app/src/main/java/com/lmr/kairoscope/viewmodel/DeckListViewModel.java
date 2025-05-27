@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.annotation.NonNull;
 
+import com.lmr.kairoscope.data.model.DeckDeleteResponse;
 import com.lmr.kairoscope.data.model.DeckListResponse;
 import com.lmr.kairoscope.data.repository.DeckRepository;
 
@@ -38,12 +39,37 @@ public class DeckListViewModel extends ViewModel {
                 }
             }
         });
+
+        this.deckRepository.getDeckDeleteResult().observeForever(result -> {
+            isLoading.postValue(false);
+
+            if (result != null && result.isSuccess()) {
+                message.postValue(result.getMessage());
+                // Recargar lista después de eliminar
+                loadDeckList();
+            } else {
+                message.postValue("Error al eliminar la baraja");
+            }
+        });
     }
 
     // Getters para LiveData
-    public LiveData<Boolean> getIsLoading() { return isLoading; }
-    public LiveData<String> getMessage() { return message; }
-    public LiveData<DeckListResponse> getDeckListResult() { return deckRepository.getDeckListResult(); }
+    public LiveData<Boolean> getIsLoading() {
+        return isLoading;
+    }
+
+    public LiveData<String> getMessage() {
+        return message;
+    }
+
+    public LiveData<DeckListResponse> getDeckListResult() {
+        return deckRepository.getDeckListResult();
+    }
+
+    // Getter para el resultado de delete
+    public LiveData<DeckDeleteResponse> getDeckDeleteResult() {
+        return deckRepository.getDeckDeleteResult();
+    }
 
     // Método para cargar la lista de barajas
     public void loadDeckList() {
@@ -54,6 +80,12 @@ public class DeckListViewModel extends ViewModel {
     // Método para limpiar mensajes
     public void clearMessage() {
         message.setValue(null);
+    }
+
+    // Método para eliminar una baraja
+    public void deleteDeck(int deckId) {
+        isLoading.setValue(true);
+        deckRepository.deleteDeck(deckId);
     }
 
     // Factory para crear el ViewModel

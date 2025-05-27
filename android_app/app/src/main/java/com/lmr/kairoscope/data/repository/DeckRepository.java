@@ -10,6 +10,7 @@ import com.lmr.kairoscope.data.model.DeckCreationRequest;
 import com.lmr.kairoscope.data.model.DeckDetailResponse;
 import com.lmr.kairoscope.data.model.DeckListResponse;
 import com.lmr.kairoscope.data.model.DeckResponse;
+import com.lmr.kairoscope.data.model.DeckDeleteResponse;
 import com.lmr.kairoscope.data.network.ApiService;
 import com.lmr.kairoscope.data.network.RetrofitClient;
 
@@ -26,6 +27,7 @@ public class DeckRepository {
     private final MutableLiveData<DeckResponse> deckCreationResult = new MutableLiveData<>();
     private final MutableLiveData<DeckListResponse> deckListResult = new MutableLiveData<>();
     private final MutableLiveData<DeckDetailResponse> deckDetailResult = new MutableLiveData<>();
+    private final MutableLiveData<DeckDeleteResponse> deckDeleteResult = new MutableLiveData<>();
 
     public DeckRepository() {
         // Obtenemos la instancia de ApiService usando RetrofitClient
@@ -42,6 +44,8 @@ public class DeckRepository {
     }
 
     public LiveData<DeckDetailResponse> getDeckDetailResult() { return deckDetailResult; }
+
+    public LiveData<DeckDeleteResponse> getDeckDeleteResult() { return deckDeleteResult; }
 
 
     // Método para crear una baraja
@@ -178,6 +182,46 @@ public class DeckRepository {
 
                     } else {
                         deckDetailResult.postValue(new DeckDetailResponse("error", null));
+                    }
+                });
+    }
+
+    public void deleteDeck(int deckId) {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+
+        if (currentUser == null) {
+            deckDeleteResult.postValue(new DeckDeleteResponse("error", "Usuario no autenticado"));
+            return;
+        }
+
+        currentUser.getIdToken(true)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        String idToken = task.getResult().getToken();
+                        String authHeader = "Bearer " + idToken;
+
+                        Call<DeckDeleteResponse> call = apiService.deleteDeck(deckId, authHeader);
+
+                        call.enqueue(new Callback<DeckDeleteResponse>() {
+                            @Override
+                            public void onResponse(Call<DeckDeleteResponse> call, Response<DeckDeleteResponse> response) {
+                                if (response.isSuccessful() && response.body() != null) {
+                                    deckDeleteResult.postValue(response.body());
+                                } else {
+                                    DeckDeleteResponse errorResponse = new DeckDeleteResponse("error", "Error al eliminar baraja");
+                                    deckDeleteResult.postValue(errorResponse);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<DeckDeleteResponse> call, Throwable t) {
+                                DeckDeleteResponse errorResponse = new DeckDeleteResponse("error", "Error de conexión");
+                                deckDeleteResult.postValue(errorResponse);
+                            }
+                        });
+
+                    } else {
+                        deckDeleteResult.postValue(new DeckDeleteResponse("error", "Error de autenticación"));
                     }
                 });
     }
