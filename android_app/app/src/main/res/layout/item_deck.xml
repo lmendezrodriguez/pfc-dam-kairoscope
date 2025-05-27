@@ -34,7 +34,7 @@
             android:textStyle="bold"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@+id/viewColorIndicator"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/buttonDeleteDeck"
             tools:text="Estrategias Oblicuas" />
 
         <!-- Discipline -->
@@ -61,6 +61,19 @@
             app:layout_constraintStart_toStartOf="@+id/textViewDiscipline"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="123 cartas • Creado hace 2 días" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonDeleteDeck"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Eliminar"
+            android:textColor="?attr/colorError"
+            app:icon="@android:drawable/ic_menu_delete"
+            app:iconTint="?attr/colorError"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

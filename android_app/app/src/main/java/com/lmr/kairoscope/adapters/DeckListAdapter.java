@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.lmr.kairoscope.R;
 import com.lmr.kairoscope.data.model.Deck;
 
@@ -27,8 +28,10 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.DeckVi
     private List<Deck> deckList = new ArrayList<>();
     private OnDeckClickListener onDeckClickListener;
 
+
     public interface OnDeckClickListener {
         void onDeckClick(Deck deck);
+        void onDeckDelete(Deck deck);
     }
 
     public DeckListAdapter(OnDeckClickListener listener) {
@@ -67,6 +70,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.DeckVi
         private TextView textViewDiscipline;
         private TextView textViewCardCount;
         private View viewColorIndicator;
+        private MaterialButton buttonDelete;
 
         public DeckViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -74,12 +78,21 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.DeckVi
             textViewDiscipline = itemView.findViewById(R.id.textViewDiscipline);
             textViewCardCount = itemView.findViewById(R.id.textViewCardCount);
             viewColorIndicator = itemView.findViewById(R.id.viewColorIndicator);
+            buttonDelete = itemView.findViewById(R.id.buttonDeleteDeck);
 
             itemView.setOnClickListener(v -> {
                 if (onDeckClickListener != null) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
                         onDeckClickListener.onDeckClick(deckList.get(position));
+                    }
+                }
+            });
+            buttonDelete.setOnClickListener(v -> {
+                if (onDeckClickListener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        onDeckClickListener.onDeckDelete(deckList.get(position));
                     }
                 }
             });

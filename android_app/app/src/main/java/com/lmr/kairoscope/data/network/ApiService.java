@@ -1,12 +1,14 @@
 package com.lmr.kairoscope.data.network;
 
 import com.google.gson.JsonObject;
+import com.lmr.kairoscope.data.model.DeckDeleteResponse;
 import com.lmr.kairoscope.data.model.DeckDetailResponse;
 import com.lmr.kairoscope.data.model.DeckListResponse;
 import com.lmr.kairoscope.data.model.DeckResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
 import retrofit2.http.Header;
@@ -27,5 +29,9 @@ public interface ApiService {
     // NUEVO: Endpoint para obtener detalles de una baraja específica
     @GET("api/deck/{deckId}/")
     Call<DeckDetailResponse> getDeckDetail(@Path("deckId") int deckId, @Header("Authorization") String authHeader);
+
+    // Endpoint para eliminar una baraja
+    @DELETE("api/deck/{deckId}/")
+    Call<DeckDeleteResponse> deleteDeck(@Path("deckId") int deckId, @Header("Authorization") String authHeader);
 
 }
