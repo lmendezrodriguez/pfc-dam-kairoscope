@@ -35,7 +35,7 @@ public class DeckListViewModel extends ViewModel {
                 if (result.isSuccess()) {
                     message.postValue("Barajas cargadas correctamente");
                 } else {
-                    message.postValue("Error al cargar las barajas");
+                    message.postValue("Error al cargar las barajas. Comprueba tu conexión");
                 }
             }
         });

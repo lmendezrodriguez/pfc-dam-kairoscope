@@ -73,7 +73,7 @@ public class LoginFragment extends Fragment {
 
         // Obtener la instancia del ViewModel usando el Factory.
         // Instanciamos el Repository aquí. En un proyecto más grande, usarías Inyección de Dependencias (ej: Dagger Hilt).
-        AuthRepository authRepository = new AuthRepository();
+        AuthRepository authRepository = new AuthRepository(requireContext());
         authViewModel = new ViewModelProvider(this, new AuthViewModel.Factory(authRepository)).get(AuthViewModel.class);
 
 

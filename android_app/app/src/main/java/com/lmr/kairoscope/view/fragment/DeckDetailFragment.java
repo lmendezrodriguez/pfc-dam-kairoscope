@@ -75,7 +75,7 @@ public class DeckDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Inicializar ViewModel
-        DeckRepository repository = new DeckRepository();
+        DeckRepository repository = new DeckRepository(requireContext());
         viewModel = new ViewModelProvider(this, new DeckDetailViewModel.Factory(repository))
                 .get(DeckDetailViewModel.class);
 

@@ -3,6 +3,7 @@
 
 package com.lmr.kairoscope.view.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log; // Importa la clase Log para los mensajes de depuración
 import android.view.LayoutInflater;
@@ -74,7 +75,7 @@ public class RegisterFragment extends Fragment {
 
         // Obtener la instancia del ViewModel usando el Factory.
         // Instanciamos el Repository aquí. En un proyecto más grande, usarías Inyección de Dependencias.
-        AuthRepository authRepository = new AuthRepository();
+        AuthRepository authRepository = new AuthRepository(requireContext());
         authViewModel = new ViewModelProvider(this, new AuthViewModel.Factory(authRepository)).get(AuthViewModel.class);
 
 

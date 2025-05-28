@@ -3,6 +3,7 @@
 
 package com.lmr.kairoscope.data.repository;
 
+import android.content.Context;
 import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -13,10 +14,11 @@ import com.google.firebase.auth.FirebaseUser;
 
 import com.lmr.kairoscope.data.model.UserProfile;
 import com.lmr.kairoscope.data.model.AuthResult;
+import com.lmr.kairoscope.util.NetworkUtils;
 
 // Clase responsable de interactuar con Firebase Authentication
 public class AuthRepository {
-
+    private final Context context;
     private final FirebaseAuth firebaseAuth;
 
     // LiveData para comunicar el resultado de las operaciones de autenticación (login/registro)
@@ -28,7 +30,8 @@ public class AuthRepository {
     private final MutableLiveData<Boolean> isAuthenticatedLiveData = new MutableLiveData<>();
 
     // Constructor. Aquí obtenemos la instancia de FirebaseAuth.
-    public AuthRepository() {
+    public AuthRepository(Context context) {
+        this.context = context;
         this.firebaseAuth = FirebaseAuth.getInstance();
         // Opcional: Verificar el estado de autenticación al crear el repositorio
         checkAuthenticationState();
@@ -49,6 +52,12 @@ public class AuthRepository {
 
     // Método para iniciar sesión con email y contraseña
     public void login(String email, String password) {
+            // Verificar conexión AÑADIR
+            if (!NetworkUtils.isNetworkAvailable(context)) {
+                authResultLiveData.postValue(new AuthResult(false, "Sin conexión a internet"));
+                isAuthenticatedLiveData.postValue(false);
+                return;
+            }
         firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -80,6 +89,12 @@ public class AuthRepository {
 
     // Método para registrar un nuevo usuario con email y contraseña
     public void register(String email, String password) {
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            authResultLiveData.postValue(new AuthResult(false, "Sin conexión a internet"));
+            currentUserProfileLiveData.postValue(null);
+            isAuthenticatedLiveData.postValue(false);
+            return;
+        }
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
