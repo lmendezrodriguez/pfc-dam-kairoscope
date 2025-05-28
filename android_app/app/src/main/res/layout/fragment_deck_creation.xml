@@ -69,27 +69,27 @@
                     android:textAppearance="?attr/textAppearanceBodyMedium" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Campo de Descripción del Bloqueo -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textInputLayoutBlockDescription"
-                style="@style/Widget.Material3.TextInputLayout.FilledBox"
+            <TextView
+                android:id="@+id/textViewBlockTagsLabel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Describe tu bloqueo creativo"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:text="¿Quieres especificar que bloqueo experimentas? Elige entre 0 y 5"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDiscipline"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutDiscipline">
+                app:layout_constraintEnd_toEndOf="parent" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/editTextBlockDescription"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textMultiLine"
-                    android:minLines="3"
-                    android:maxLines="5"
-                    android:textAppearance="?attr/textAppearanceBodyMedium" />
-            </com.google.android.material.textfield.TextInputLayout>
+            <!-- ChipGroup para tags predefinidos -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupBlockTags"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:singleSelection="false"
+                app:layout_constraintTop_toBottomOf="@+id/textViewBlockTagsLabel"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <!-- Sección de selección de color -->
             <TextView
@@ -99,7 +99,7 @@
                 android:layout_marginTop="24dp"
                 android:text="Elige un color que represente tu estado creativo"
                 android:textAppearance="?attr/textAppearanceBodyLarge"
-                app:layout_constraintTop_toBottomOf="@+id/textInputLayoutBlockDescription"
+                app:layout_constraintTop_toBottomOf="@+id/chipGroupBlockTags"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
