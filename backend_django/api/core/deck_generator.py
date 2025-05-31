@@ -40,7 +40,7 @@ class DeckGenerator:
 
             # Inicializar el modelo LLM usando LangChain
             self.llm = ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash-preview-05-20",
                 temperature=0.8,  # Puede ajustarse para más/menos creatividad
                 top_p=0.9,
                 max_output_tokens=4096

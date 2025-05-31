@@ -9,4 +9,18 @@
     <string name="label_select_color">Elige un color que represente tu estado creativo</string>
     <string name="button_create_deck">Generar Baraja</string>
     <string name="note_generation_time">La generación de tu baraja personalizada puede tomar hasta 30 segundos. Se crearán 123 cartas adaptadas a tu situación.</string>
+    <string-array name="creative_block_tags">
+        <item>No saber por dónde empezar</item>
+        <item>Falta de inspiración</item>
+        <item>Perfeccionismo</item>
+        <item>Procrastinación</item>
+        <item>Bloqueo técnico</item>
+        <item>No saber por dónde seguir</item>
+        <item>Saturación de estímulos</item>
+        <item>Rutina</item>
+        <item>Presión de tiempo</item>
+        <item>Falta de confianza</item>
+        <item>Falta de estructura</item>
+        <item>No saber cómo terminar</item>
+    </string-array>
 </resources>

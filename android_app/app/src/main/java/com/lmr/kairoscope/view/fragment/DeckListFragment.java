@@ -64,7 +64,7 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
         navController = NavHostFragment.findNavController(this);
 
         // Inicializar ViewModel
-        DeckRepository repository = new DeckRepository();
+        DeckRepository repository = new DeckRepository(requireContext());
         viewModel = new ViewModelProvider(this, new DeckListViewModel.Factory(repository))
                 .get(DeckListViewModel.class);
 

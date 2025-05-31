@@ -1,5 +1,7 @@
 package com.lmr.kairoscope.data.repository;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -13,6 +15,7 @@ import com.lmr.kairoscope.data.model.DeckResponse;
 import com.lmr.kairoscope.data.model.DeckDeleteResponse;
 import com.lmr.kairoscope.data.network.ApiService;
 import com.lmr.kairoscope.data.network.RetrofitClient;
+import com.lmr.kairoscope.util.NetworkUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -22,6 +25,7 @@ public class DeckRepository {
 
     private final ApiService apiService;
     private final FirebaseAuth firebaseAuth;
+    private final Context context;
 
     // LiveData para comunicar resultados al ViewModel
     private final MutableLiveData<DeckResponse> deckCreationResult = new MutableLiveData<>();
@@ -29,7 +33,8 @@ public class DeckRepository {
     private final MutableLiveData<DeckDetailResponse> deckDetailResult = new MutableLiveData<>();
     private final MutableLiveData<DeckDeleteResponse> deckDeleteResult = new MutableLiveData<>();
 
-    public DeckRepository() {
+    public DeckRepository(Context context) {
+        this.context = context;
         // Obtenemos la instancia de ApiService usando RetrofitClient
         this.apiService = RetrofitClient.getInstance().getApiService();
         this.firebaseAuth = FirebaseAuth.getInstance();
@@ -56,6 +61,11 @@ public class DeckRepository {
         if (currentUser == null) {
             // No hay usuario autenticado
             deckCreationResult.postValue(new DeckResponse("error", "Usuario no autenticado"));
+            return;
+        }
+        // AÑADIR verificación de conexión
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            deckCreationResult.postValue(new DeckResponse("error", "Sin conexión a internet"));
             return;
         }
 
@@ -114,6 +124,11 @@ public class DeckRepository {
             return;
         }
 
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            deckListResult.postValue(new DeckListResponse("error", null, 0));
+            return;
+        }
+
         currentUser.getIdToken(true)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -154,6 +169,14 @@ public class DeckRepository {
             return;
         }
 
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            // Para getDeckDetail:
+            deckDetailResult.postValue(new DeckDetailResponse("error", null));
+            // Para deleteDeck:
+            deckDeleteResult.postValue(new DeckDeleteResponse("error", "Sin conexión a internet"));
+            return;
+        }
+
         currentUser.getIdToken(true)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -191,6 +214,14 @@ public class DeckRepository {
 
         if (currentUser == null) {
             deckDeleteResult.postValue(new DeckDeleteResponse("error", "Usuario no autenticado"));
+            return;
+        }
+
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            // Para getDeckDetail:
+            deckDetailResult.postValue(new DeckDetailResponse("error", null));
+            // Para deleteDeck:
+            deckDeleteResult.postValue(new DeckDeleteResponse("error", "Sin conexión a internet"));
             return;
         }
 
