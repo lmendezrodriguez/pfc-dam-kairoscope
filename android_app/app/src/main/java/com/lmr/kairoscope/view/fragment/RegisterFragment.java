@@ -8,8 +8,6 @@ import android.util.Log; // Importa la clase Log para los mensajes de depuració
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button; // MaterialButton hereda de Button
-import android.widget.ProgressBar; // CircularProgressIndicator hereda de ProgressBar
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +25,8 @@ import com.lmr.kairoscope.R; // Importa la clase R para referenciar recursos
 import com.lmr.kairoscope.data.repository.AuthRepository; // Importa tu Repository (para Factory)
 import com.lmr.kairoscope.viewmodel.AuthViewModel; // Importa tu ViewModel
 
+import java.util.Objects;
+
 
 public class RegisterFragment extends Fragment {
 
@@ -34,6 +34,7 @@ public class RegisterFragment extends Fragment {
     private TextInputEditText editTextName; // Campo de Nombre
     private TextInputEditText editTextEmail;
     private TextInputEditText editTextPassword;
+    private TextInputEditText editTextRepeatPassword;
     private MaterialButton buttonRegister; // Botón de Registrarse
     private MaterialButton buttonLogin; // Botón para ir a Iniciar Sesión
     private CircularProgressIndicator progressBar;
@@ -57,6 +58,7 @@ public class RegisterFragment extends Fragment {
         editTextName = view.findViewById(R.id.editTextName); // Obtener referencia al campo Nombre
         editTextEmail = view.findViewById(R.id.editTextEmail);
         editTextPassword = view.findViewById(R.id.editTextPassword);
+        editTextRepeatPassword = view.findViewById(R.id.editTextRepeatPassword);
         buttonRegister = view.findViewById(R.id.buttonRegister); // Obtener referencia al botón de Registrarse
         buttonLogin = view.findViewById(R.id.buttonLogin); // Obtener referencia al botón para ir a Login
         progressBar = view.findViewById(R.id.progressBar);
@@ -92,6 +94,7 @@ public class RegisterFragment extends Fragment {
                 editTextName.setEnabled(false); // Deshabilitar campo Nombre
                 editTextEmail.setEnabled(false);
                 editTextPassword.setEnabled(false);
+                editTextRepeatPassword.setEnabled(false);
             } else {
                 progressBar.setVisibility(View.GONE); // Oculta la barra de carga
                 // Habilitar interacción UI una vez terminada la carga
@@ -100,6 +103,7 @@ public class RegisterFragment extends Fragment {
                 editTextName.setEnabled(true); // Habilitar campo Nombre
                 editTextEmail.setEnabled(true);
                 editTextPassword.setEnabled(true);
+                editTextRepeatPassword.setEnabled(true);
             }
         });
 
@@ -143,26 +147,18 @@ public class RegisterFragment extends Fragment {
 
         // Click Listener para el botón de Registrarse
         buttonRegister.setOnClickListener(v -> {
-            String name = editTextName.getText().toString().trim(); // Obtener el nombre
-            String email = editTextEmail.getText().toString().trim();
-            String password = editTextPassword.getText().toString().trim();
+            String name = Objects.requireNonNull(editTextName.getText()).toString().trim(); // Obtener el nombre
+            String email = Objects.requireNonNull(editTextEmail.getText()).toString().trim();
+            String password = Objects.requireNonNull(editTextPassword.getText()).toString().trim();
+            String repeatPassword = Objects.requireNonNull(editTextRepeatPassword.getText()).toString().trim();
 
             // Validación básica de campos (que no estén vacíos)
-            if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            if (name.isEmpty() || email.isEmpty() || password.isEmpty() || repeatPassword.isEmpty()) {
                 Snackbar.make(requireView(), "Por favor, completa todos los campos (Nombre, Email, Password)", Snackbar.LENGTH_SHORT).show();
+            } else if (!password.equals(repeatPassword)) {
+                Snackbar.make(requireView(), "Las contraseñas no coinciden", Snackbar.LENGTH_SHORT).show();
             } else {
-                // Llamar al método del ViewModel para registrar.
-                // NOTA: authViewModel.register() llama a AuthRepository.register() que usa
-                // firebaseAuth.createUserWithEmailAndPassword(email, password).
-                // Esto NO guarda el 'name' en Firebase Auth directamente.
-                // Si quieres guardar el nombre en Firebase Auth (displayName) o tu backend Django,
-                // necesitarás añadir esa lógica DESPUÉS de un registro exitoso (por ejemplo, en AuthRepository
-                // después de la llamada a createUserWithEmailAndPassword si task.isSuccessful() es true,
-                // o enviando el nombre junto con el UID a tu backend).
                 authViewModel.register(email, password);
-
-                // La barra de carga y el estado de los botones se actualizarán vía el observer de isLoading.
-                // El resultado (éxito/fallo y mensaje) se comunicará vía los observers de isAuthenticated y message.
             }
         });
 
@@ -176,12 +172,6 @@ public class RegisterFragment extends Fragment {
                 Log.e(TAG, "Navigation error to Login: " + e.getMessage());
             }
         });
-
-        // --- Lógica Inicial ---
-        // Opcional: Podrías verificar el estado de autenticación aquí si quisieras
-        // que un usuario ya logueado no viera la pantalla de registro, aunque es más
-        // común hacer esa verificación solo en la pantalla de Login/Splash.
-        // authViewModel.checkAuthenticationState();
     }
 
     // Limpiar referencias UI en onDestroyView
@@ -195,7 +185,7 @@ public class RegisterFragment extends Fragment {
         buttonRegister = null;
         buttonLogin = null;
         progressBar = null;
-        navController = null; // Limpiar referencia al NavController local
-        // Los observers LiveData se limpian automáticamente con getViewLifecycleOwner()
+        navController = null;
+        editTextRepeatPassword = null;
     }
 }
