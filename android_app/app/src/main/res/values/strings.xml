@@ -9,6 +9,8 @@
     <string name="label_select_color">Elige un color que represente tu estado creativo</string>
     <string name="button_create_deck">Generar Baraja</string>
     <string name="note_generation_time">La generación de tu baraja personalizada puede tomar hasta 30 segundos. Se crearán 123 cartas adaptadas a tu situación.</string>
+    <string name="modo_nocturno">Modo nocturno</string>
+    <string name="perfil">Perfil</string>
     <string-array name="creative_block_tags">
         <item>No saber por dónde empezar</item>
         <item>Falta de inspiración</item>
