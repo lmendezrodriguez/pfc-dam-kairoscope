@@ -9,6 +9,16 @@
     <string name="label_select_color">Elige un color que represente tu estado creativo</string>
     <string name="button_create_deck">Generar Baraja</string>
     <string name="note_generation_time">La generación de tu baraja personalizada puede tomar hasta 30 segundos. Se crearán 123 cartas adaptadas a tu situación.</string>
+    <string name="modo_nocturno">Modo nocturno</string>
+    <string name="perfil">Perfil</string>
+    <string name="logo_de_la_aplicaci_n">Logo de la aplicación</string>
+    <string name="crea_una_cuenta">Crea una cuenta</string>
+    <string name="nombre">Nombre</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="repetir_contrase_a">Repetir contraseña</string>
+    <string name="registrarse">Registrarse</string>
+    <string name="ya_tengo_una_cuenta_iniciar_sesi_n">Ya tengo una cuenta. Iniciar sesión</string>
     <string-array name="creative_block_tags">
         <item>No saber por dónde empezar</item>
         <item>Falta de inspiración</item>

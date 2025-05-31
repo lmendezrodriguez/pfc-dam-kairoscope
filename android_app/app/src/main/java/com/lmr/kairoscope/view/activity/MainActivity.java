@@ -2,86 +2,125 @@ package com.lmr.kairoscope.view.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentContainerView;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View; // Importa View
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 
-import com.google.android.material.appbar.MaterialToolbar; // Importa MaterialToolbar
-import com.lmr.kairoscope.R; // Asegúrate de que R esté importado correctamente
+import com.google.android.material.appbar.MaterialToolbar;
+import com.lmr.kairoscope.R;
 
+/**
+ * Activity principal que gestiona la navegación global y el tema de la aplicación.
+ * Configura el Navigation Component y el modo claro/oscuro.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private NavController navController;
     private AppBarConfiguration appBarConfiguration;
-    private MaterialToolbar toolbar; // Referencia a la Toolbar
+    private MaterialToolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Aplicar tema guardado antes de crear la vista
+        SharedPreferences prefs = getSharedPreferences("app_preferences", Context.MODE_PRIVATE);
+        boolean isNightMode = prefs.getBoolean("night_mode", false);
+        AppCompatDelegate.setDefaultNightMode(isNightMode ?
+                AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_main);
 
-        // Obtener referencia a la MaterialToolbar
+        // Configurar toolbar como ActionBar
         toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar); // Configura la Toolbar como la ActionBar
+        setSupportActionBar(toolbar);
 
-        // Obtén el NavController del NavHostFragment
-        // La forma recomendada es usando findFragmentById y casteando a NavHostFragment
+        // Configurar Navigation Component
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         if (navHostFragment != null) {
             navController = navHostFragment.getNavController();
 
-            // Configura AppBarConfiguration.
-            // Necesitamos decirle al NavigationUI qué destinos son de "nivel superior"
-            // donde no debe mostrar el botón de retroceso (flecha arriba).
-            // Los fragmentos de Login y Register NUNCA deben tener botón de retroceso hacia atrás
-            // porque son puntos de entrada o flujos de inicio.
-            // DeckListFragment es el destino principal tras la autenticación, tampoco debería tener flecha hacia atrás
-            // si es el primer destino visible después del flujo de auth.
+            // Definir destinos de nivel superior (sin botón atrás)
             appBarConfiguration = new AppBarConfiguration.Builder(
-                    R.id.loginFragment, // ID del fragmento de Login en tu nav_graph.xml
-                    R.id.registerFragment, // ID del fragmento de Register en tu nav_graph.xml
-                    R.id.deckListFragment // ID del fragmento de DeckList (pantalla principal)
-                    // Añade aquí los IDs de cualquier otro fragmento que sea un punto de entrada principal
-                    // o al que puedas llegar desde la barra de navegación inferior/drawer (si los añades)
+                    R.id.loginFragment,
+                    R.id.registerFragment,
+                    R.id.deckListFragment
             ).build();
 
-
-            // Vincula la Toolbar con el NavController y AppBarConfiguration
-            // Esto hará que la Toolbar muestre el título del Fragmento actual y el botón de "atrás"
-            // automáticamente, respetando los destinos de nivel superior.
+            // Vincular toolbar con navegación
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-            // Listener para cambiar la visibilidad de la Toolbar
+            // Ocultar toolbar en pantallas de autenticación
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destinationId = destination.getId();
-                // Ocultar la Toolbar en las pantallas de Login y Register
                 if (destinationId == R.id.loginFragment || destinationId == R.id.registerFragment) {
                     toolbar.setVisibility(View.GONE);
                 } else {
-                    // Mostrar la Toolbar en todas las demás pantallas
                     toolbar.setVisibility(View.VISIBLE);
                 }
             });
-
-        } else {
-            // Esto no debería pasar si el FragmentContainerView está bien configurado
-            // Puedes añadir un Log.e() o un Toast aquí si quieres depurar
         }
     }
 
-    // Este método permite que el botón de flecha arriba/atrás en la Toolbar funcione
-    // con el Navigation Component.
+    /**
+     * Habilita navegación hacia arriba usando Navigation Component.
+     */
     @Override
     public boolean onSupportNavigateUp() {
-        // Intenta navegar hacia arriba en la jerarquía de navegación (usando AppBarConfiguration)
-        // Si no es posible (porque ya estás en un destino de nivel superior),
-        // entonces permite que la Activity maneje el evento (comportamiento por defecto).
         return NavigationUI.navigateUp(navController, appBarConfiguration)
                 || super.onSupportNavigateUp();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_toggle_night_mode) {
+            toggleNightMode();
+            return true;
+        } else if (id == R.id.action_user_profile) {
+            // Navegar a perfil de usuario
+            if (navController != null) {
+                try {
+                    navController.navigate(R.id.action_deckListFragment_to_userProfileFragment);
+                } catch (Exception e) {
+                    // Si no estamos en DeckList, ir directamente
+                    navController.navigate(R.id.userProfileFragment);
+                }
+            }
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Alterna entre modo claro y oscuro, guardando la preferencia.
+     */
+    private void toggleNightMode() {
+        SharedPreferences prefs = getSharedPreferences("app_preferences", Context.MODE_PRIVATE);
+        boolean isNightMode = prefs.getBoolean("night_mode", false);
+
+        if (isNightMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            prefs.edit().putBoolean("night_mode", false).apply();
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            prefs.edit().putBoolean("night_mode", true).apply();
+        }
     }
 }

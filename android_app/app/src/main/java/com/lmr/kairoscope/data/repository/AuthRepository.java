@@ -9,9 +9,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.lmr.kairoscope.data.model.UserProfile;
 import com.lmr.kairoscope.data.model.AuthResult;
 import com.lmr.kairoscope.util.NetworkUtils;
@@ -64,7 +67,7 @@ public class AuthRepository {
                         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
                         if (firebaseUser != null) {
                             // Mapear FirebaseUser a tu UserProfile
-                            UserProfile userProfile = new UserProfile(firebaseUser.getUid(), firebaseUser.getDisplayName());
+                            UserProfile userProfile = new UserProfile(firebaseUser.getUid(), firebaseUser.getDisplayName(), firebaseUser.getEmail());
                             currentUserProfileLiveData.postValue(userProfile);
                         } else {
                             currentUserProfileLiveData.postValue(null); // Opcional: Si por alguna razón es null
@@ -88,7 +91,7 @@ public class AuthRepository {
     }
 
     // Método para registrar un nuevo usuario con email y contraseña
-    public void register(String email, String password) {
+    public void register(String email, String password, String displayName) {
         if (!NetworkUtils.isNetworkAvailable(context)) {
             authResultLiveData.postValue(new AuthResult(false, "Sin conexión a internet"));
             currentUserProfileLiveData.postValue(null);
@@ -101,13 +104,23 @@ public class AuthRepository {
                         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
                         if (firebaseUser != null) {
                             // Mapear FirebaseUser a tu UserProfile
-                            UserProfile userProfile = new UserProfile(firebaseUser.getUid(), firebaseUser.getDisplayName());
-                            currentUserProfileLiveData.postValue(userProfile);
-                        } else {
-                            currentUserProfileLiveData.postValue(null);
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setDisplayName(displayName)
+                                    .build();
+
+                            firebaseUser.updateProfile(profileUpdates)
+                                    .addOnCompleteListener(updateTask -> {
+                                        // Crear UserProfile con el nombre
+                                        UserProfile userProfile = new UserProfile(
+                                                firebaseUser.getUid(),
+                                                displayName,
+                                                firebaseUser.getEmail()
+                                        );
+                                        currentUserProfileLiveData.postValue(userProfile);
+                                        authResultLiveData.postValue(new AuthResult(true, null));
+                                        isAuthenticatedLiveData.postValue(true);
+                                    });
                         }
-                        authResultLiveData.postValue(new AuthResult(true, null));
-                        isAuthenticatedLiveData.postValue(true); // Usuario logueado después de registrar
                     } else {
                         // AQUÍ ESTÁ LA CORRECCIÓN: Capturar el mensaje de error de Firebase
                         String errorMessage = "Error de registro";
@@ -137,7 +150,7 @@ public class AuthRepository {
 
         if (isAuthenticated) {
             // Mapear FirebaseUser a tu UserProfile si hay usuario logueado
-            UserProfile userProfile = new UserProfile(firebaseUser.getUid(), firebaseUser.getDisplayName());
+            UserProfile userProfile = new UserProfile(firebaseUser.getUid(), firebaseUser.getDisplayName(), firebaseUser.getEmail());
             currentUserProfileLiveData.postValue(userProfile);
         } else {
             currentUserProfileLiveData.postValue(null); // No hay usuario, perfil es null
@@ -149,5 +162,48 @@ public class AuthRepository {
         firebaseAuth.signOut();
         isAuthenticatedLiveData.postValue(false); // El usuario ya no está autenticado
         currentUserProfileLiveData.postValue(null); // El perfil del usuario ya no está disponible
+    }
+    public void updateUserProfile(String newDisplayName) {
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user != null) {
+            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(newDisplayName)
+                    .build();
+
+            user.updateProfile(profileUpdates)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            // Actualizar el LiveData local
+                            UserProfile updated = new UserProfile(user.getUid(), newDisplayName, user.getEmail());
+                            currentUserProfileLiveData.postValue(updated);
+                        }
+                    });
+        }
+    }
+
+    public void updatePassword(String currentPassword, String newPassword, PasswordUpdateCallback callback) {
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user != null && user.getEmail() != null) {
+            // Re-autenticar primero
+            AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+
+            user.reauthenticate(credential)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            // Cambiar contraseña
+                            user.updatePassword(newPassword)
+                                    .addOnCompleteListener(updateTask -> {
+                                        callback.onResult(updateTask.isSuccessful(),
+                                                updateTask.isSuccessful() ? null : updateTask.getException().getMessage());
+                                    });
+                        } else {
+                            callback.onResult(false, "Contraseña actual incorrecta");
+                        }
+                    });
+        }
+    }
+
+    public interface PasswordUpdateCallback {
+        void onResult(boolean success, String error);
     }
 }
