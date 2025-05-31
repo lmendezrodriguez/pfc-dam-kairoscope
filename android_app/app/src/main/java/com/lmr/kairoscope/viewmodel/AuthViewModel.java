@@ -84,10 +84,9 @@ public class AuthViewModel extends ViewModel {
     }
 
     // Método público para registrar (llamado por el Fragmento de Registro)
-    public void register(String email, String password) {
-        isLoading.setValue(true); // Indicar que la operación está en curso
-        authRepository.register(email, password);
-        // El observer de authResultLiveData capturará el resultado y actualizará isLoading y message.
+    public void register(String email, String password, String displayName) {
+        isLoading.setValue(true);
+        authRepository.register(email, password, displayName);
     }
 
     // Método público para verificar el estado de autenticación al inicio (llamado por el Fragmento de Login/Splash)

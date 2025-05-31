@@ -93,7 +93,15 @@ public class MainActivity extends AppCompatActivity {
             toggleNightMode();
             return true;
         } else if (id == R.id.action_user_profile) {
-            // TODO: Implementar perfil de usuario
+            // Navegar a perfil de usuario
+            if (navController != null) {
+                try {
+                    navController.navigate(R.id.action_deckListFragment_to_userProfileFragment);
+                } catch (Exception e) {
+                    // Si no estamos en DeckList, ir directamente
+                    navController.navigate(R.id.userProfileFragment);
+                }
+            }
             return true;
         }
 

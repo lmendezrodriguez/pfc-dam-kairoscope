@@ -159,7 +159,7 @@ public class RegisterFragment extends Fragment {
             } else if (!password.equals(repeatPassword)) {
                 Snackbar.make(requireView(), "Las contraseñas no coinciden", Snackbar.LENGTH_SHORT).show();
             } else {
-                authViewModel.register(email, password);
+                authViewModel.register(email, password, name);
             }
         });
 

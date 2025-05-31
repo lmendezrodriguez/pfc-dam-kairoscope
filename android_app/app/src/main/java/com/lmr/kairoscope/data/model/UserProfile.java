@@ -2,23 +2,20 @@ package com.lmr.kairoscope.data.model;
 
 public class UserProfile {
     private String firebaseUid;
-    private String displayName; // Campo para el nombre del usuario
+    private String displayName;
+    private String email;
 
-    // Constructor básico con UID y nombre
-    public UserProfile(String firebaseUid, String displayName) {
+    public UserProfile(String firebaseUid, String displayName, String email) {
         this.firebaseUid = firebaseUid;
         this.displayName = displayName;
+        this.email = email;
     }
 
-    // Getters
-    public String getFirebaseUid() {
-        return firebaseUid;
-    }
+    // Getters y setters
+    public String getFirebaseUid() { return firebaseUid; }
+    public String getDisplayName() { return displayName; }
+    public String getEmail() { return email; }
 
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    // Puedes añadir setters si la lógica de tu app lo requiere,
-    // aunque a menudo los modelos de datos pasivos solo tienen getters.
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public void setEmail(String email) { this.email = email; }
 }
