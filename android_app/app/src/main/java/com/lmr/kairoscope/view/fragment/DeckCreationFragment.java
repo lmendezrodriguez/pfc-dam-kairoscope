@@ -85,7 +85,7 @@ public class DeckCreationFragment extends Fragment {
 
         navController = NavHostFragment.findNavController(this);
 
-        DeckRepository repository = new DeckRepository();
+        DeckRepository repository = new DeckRepository(requireContext());
         viewModel = new ViewModelProvider(this, new DeckCreationViewModel.Factory(repository))
                 .get(DeckCreationViewModel.class);
 
