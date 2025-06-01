@@ -11,15 +11,13 @@
 
     <ImageView
         android:id="@+id/imageViewLogoPlaceholder"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:layout_marginTop="48dp"
         android:contentDescription="Logo de la aplicación"
-        android:src="@drawable/ic_launcher_foreground"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@mipmap/ic_launcher_kai_b_foreground"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="?attr/colorPrimary" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <!-- Título/Mensaje debajo del Logo -->
     <TextView

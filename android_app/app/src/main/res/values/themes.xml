@@ -58,31 +58,37 @@
 
     <!-- Estilos de tipografía -->
     <style name="TextAppearance.App.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
-        <item name="fontFamily">@font/josefin_slab</item>
+        <item name="fontFamily">@font/josefinslab_semibold</item>
     </style>
 
     <style name="TextAppearance.App.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
-        <item name="fontFamily">@font/josefin_slab</item>
+        <item name="fontFamily">@font/josefinslab_semibold</item>
     </style>
 
     <style name="TextAppearance.App.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
-        <item name="fontFamily">@font/josefin_slab</item>
+        <item name="fontFamily">@font/josefinslab_semibold</item>
     </style>
 
     <style name="TextAppearance.App.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
-        <item name="fontFamily">@font/josefin_slab</item>
+        <item name="fontFamily">@font/josefinslab_semibold</item>
     </style>
 
     <style name="TextAppearance.App.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
-        <item name="fontFamily">@font/montserrat_alternates</item>
+        <item name="fontFamily">@font/montserratalternates_semibold</item>
     </style>
 
     <style name="TextAppearance.App.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
-        <item name="fontFamily">@font/montserrat_alternates</item>
+        <item name="fontFamily">@font/montserratalternates_semibold</item>
     </style>
 
     <style name="TextAppearance.App.BodySmall" parent="TextAppearance.Material3.BodySmall">
-        <item name="fontFamily">@font/montserrat_alternates</item>
+        <item name="fontFamily">@font/montserratalternates_semibold</item>
+    </style>
+    <!-- Estilo para el toolbar -->
+    <style name="AppTheme.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:textColorPrimary">?attr/colorOnPrimary</item>
+        <item name="android:textColorSecondary">?attr/colorOnPrimary</item>
+        <item name="titleTextAppearance">@style/TextAppearance.App.TitleLarge</item>
     </style>
 
     <!-- Base application theme. -->
