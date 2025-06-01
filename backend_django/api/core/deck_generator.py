@@ -2,8 +2,8 @@ import os
 import logging
 from typing import Dict, List, Any
 
+from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_core.vectorstores import VectorStoreRetriever
@@ -34,21 +34,18 @@ class DeckGenerator:
         self.retriever = retriever
 
         # Cargar configuración de la API de Google y el LLM
-        api_key = os.getenv('GOOGLE_API_KEY')
+        api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
             logger.error("GOOGLE_API_KEY not found in environment")
             raise ValueError(
                 "GOOGLE_API_KEY no encontrada en variables de entorno.")
 
         # Inicializar el modelo LLM usando LangChain
-        self.llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash-preview-05-20",
-            temperature=0.9,
-            top_p=0.85,
-            model_kwargs={
-                "response_mime_type": "application/json"
-            }
+        self.llm = ChatOpenAI(
+            model="gpt-4.1",  # o "gpt-4o" si prefieres
+            temperature=0.85,
         )
+
         logger.info("DeckGenerator initialized with Gemini LLM")
 
         # Configurar las plantillas de prompts
