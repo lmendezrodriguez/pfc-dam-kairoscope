@@ -165,17 +165,20 @@ public class UserProfileFragment extends Fragment {
             viewModel.updateProfile(newName);
         }
 
-        // Validar si hay cambio de contraseña
-        if (!currentPassword.isEmpty() && !newPassword.isEmpty()) {
+        // Validar si quiere cambiar contraseña (todos los campos llenos)
+        if (!currentPassword.isEmpty() || !newPassword.isEmpty() || !confirmPassword.isEmpty()) {
+            if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+                Snackbar.make(requireView(), "Para cambiar contraseña, completa todos los campos",
+                        Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+
             if (newPassword.length() < 6) {
                 Snackbar.make(requireView(), "La contraseña debe tener al menos 6 caracteres",
                         Snackbar.LENGTH_SHORT).show();
                 return;
             }
             viewModel.updatePassword(currentPassword, newPassword, confirmPassword);
-        } else if (!currentPassword.isEmpty() || !newPassword.isEmpty() || !confirmPassword.isEmpty()) {
-            Snackbar.make(requireView(), "Completa todos los campos de contraseña",
-                    Snackbar.LENGTH_SHORT).show();
         }
     }
 
