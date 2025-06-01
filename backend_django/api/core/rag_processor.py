@@ -329,3 +329,69 @@ class RAGProcessor:
         except Exception as e:
             logger.error(f"Failed to load FAISS index from {store_path}: {e}")
             raise
+
+    @staticmethod
+    def create_divergence_retriever(vector_store, query, k=5):
+        """Busca documentos MENOS similares al query"""
+        # Buscar muchos candidatos para tener pool amplio
+        docs_with_scores = vector_store.similarity_search_with_score(
+            query, k=k * 10
+        )
+        # Ordenar por score MÁS ALTO (menos similares en embeddings)
+        divergent_docs = sorted(docs_with_scores, key=lambda x: x[1],
+                                reverse=True)
+        # Retornar solo los documentos, sin scores
+        return [doc for doc, score in divergent_docs[:k]]
+
+    @staticmethod
+    def create_random_retriever(vector_store, k=5):
+        """Recupera documentos completamente aleatorios"""
+        import random
+
+        # Obtener todos los documentos del vector store
+        # Hack: buscar con query vacío y k muy alto
+        all_docs = vector_store.similarity_search("",
+                                                  k=500)  # Ajusta según tu DB
+
+        # Si tienes menos docs que k, devolver todos
+        if len(all_docs) <= k:
+            return all_docs
+
+        # Selección aleatoria
+        return random.sample(all_docs, k)
+
+    @staticmethod
+    def create_mixed_retriever(vector_store, query, k_sim=5, k_div=5,
+                               k_random=5):
+        """Combina similarity, divergence y random retrievers"""
+        mixed_docs = []
+
+        try:
+            # 1. Documentos por similitud (método tradicional)
+            sim_docs = vector_store.similarity_search(query, k=k_sim)
+            mixed_docs.extend(sim_docs)
+
+            # 2. Documentos divergentes
+            div_docs = RAGProcessor.create_divergence_retriever(vector_store,
+                                                                query, k=k_div)
+            mixed_docs.extend(div_docs)
+
+            # 3. Documentos aleatorios
+            random_docs = RAGProcessor.create_random_retriever(vector_store,
+                                                               k=k_random)
+            mixed_docs.extend(random_docs)
+
+            # Eliminar duplicados manteniendo orden
+            seen_content = set()
+            unique_docs = []
+            for doc in mixed_docs:
+                if doc.page_content not in seen_content:
+                    seen_content.add(doc.page_content)
+                    unique_docs.append(doc)
+
+            return unique_docs
+
+        except Exception as e:
+            print(f"Error in mixed retriever: {e}")
+            # Fallback a similarity simple
+            return vector_store.similarity_search(query, k=k_sim)
