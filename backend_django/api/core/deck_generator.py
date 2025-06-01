@@ -8,6 +8,8 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_core.vectorstores import VectorStoreRetriever
 
+from api.core import RAGProcessor
+
 logger = logging.getLogger('api.core')
 
 
@@ -165,10 +167,16 @@ class DeckGenerator:
 
             # Log retriever debugging info
             logger.debug(f"Retriever query: {retriever_query}")
-            retrieved_docs = self.retriever.invoke(retriever_query)
-            logger.debug(f"Retrieved {len(retrieved_docs)} documents")
+            mixed_docs = RAGProcessor.create_mixed_retriever(
+                self.retriever.vectorstore,
+                # Acceder al vector store desde el retriever
+                retriever_query,
+                k_sim=5, k_div=5, k_random=5
+            )
+            logger.debug(
+                f"Retrieved {len(mixed_docs)} mixed documents (sim+div+random)")
 
-            for i, doc in enumerate(retrieved_docs):
+            for i, doc in enumerate(mixed_docs):
                 logger.debug(f"Doc {i + 1}: {doc.page_content[:100]}...")
 
             chain_input = {
