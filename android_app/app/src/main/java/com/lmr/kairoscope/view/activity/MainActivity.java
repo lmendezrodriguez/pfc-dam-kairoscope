@@ -16,6 +16,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.lmr.kairoscope.R;
 
 /**
@@ -32,37 +34,43 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Aplicar tema guardado antes de crear la vista
+        // Aplicar tema guardado
         SharedPreferences prefs = getSharedPreferences("app_preferences", Context.MODE_PRIVATE);
         boolean isNightMode = prefs.getBoolean("night_mode", false);
         AppCompatDelegate.setDefaultNightMode(isNightMode ?
                 AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
-        setContentView(R.layout.activity_main);
 
-        // Configurar toolbar como ActionBar
+        // Verificar auth ANTES de setContentView
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        setContentView(R.layout.activity_main); // Solo UNA vez
+
+        // Configurar toolbar
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayShowTitleEnabled(true);
-        }
+        // Configurar Navigation
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
 
-        // Configurar Navigation Component
-        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         if (navHostFragment != null) {
             navController = navHostFragment.getNavController();
 
-            // Definir destinos de nivel superior (sin botón atrás)
+            // Configurar appBarConfiguration ANTES de navegar
             appBarConfiguration = new AppBarConfiguration.Builder(
                     R.id.loginFragment,
                     R.id.registerFragment,
                     R.id.deckListFragment
             ).build();
 
-            // Vincular toolbar con navegación
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-            // Ocultar toolbar en pantallas de autenticación
+            // AHORA navegar si está autenticado
+            if (currentUser != null) {
+                navController.navigate(R.id.deckListFragment);
+            }
+
+            // Listener para toolbar
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destinationId = destination.getId();
                 if (destinationId == R.id.loginFragment || destinationId == R.id.registerFragment) {
