@@ -1,80 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="180dp"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="3dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:padding="16dp">
-
-        <!-- Color indicator -->
-        <View
-            android:id="@+id/viewColorIndicator"
-            android:layout_width="4dp"
-            android:layout_height="0dp"
-            android:background="#31628D"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
 
         <!-- Deck name -->
         <TextView
             android:id="@+id/textViewDeckName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textStyle="bold"
+            android:textAppearance="?attr/textAppearanceTitleLarge"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/viewColorIndicator"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/buttonDeleteDeck"
-            tools:text="Estrategias Oblicuas" />
+            tools:text="Sombras Verde Esmeralda" />
 
-        <!-- Discipline -->
+        <!-- Discipline chip -->
         <TextView
             android:id="@+id/textViewDiscipline"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:background="@drawable/discipline_chip_background"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="@android:color/white"
             app:layout_constraintTop_toBottomOf="@+id/textViewDeckName"
-            app:layout_constraintStart_toStartOf="@+id/textViewDeckName"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:text="Música" />
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="Pintura" />
 
-        <!-- Card count and date -->
+        <!-- Card count -->
         <TextView
             android:id="@+id/textViewCardCount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textColor="?android:attr/textColorSecondary"
-            app:layout_constraintTop_toBottomOf="@+id/textViewDiscipline"
-            app:layout_constraintStart_toStartOf="@+id/textViewDiscipline"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:drawableStart="@drawable/baseline_crop_7_5_24"
+            android:drawableTint="?android:attr/textColorSecondary"
+            android:drawablePadding="4dp"
+            app:layout_constraintBottom_toTopOf="@id/textViewCreationDate"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="123 cartas • Creado hace 2 días" />
+            tools:text="123 cartas" />
+
+        <!-- Creation date -->
+        <TextView
+            android:id="@+id/textViewCreationDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:drawableStart="@drawable/baseline_calendar_month_24"
+            android:drawableTint="?android:attr/textColorSecondary"
+            android:textColor="?android:attr/textColorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Creado 31 May" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonDeleteDeck"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Eliminar"
-            android:textColor="?attr/colorError"
-            app:icon="@android:drawable/ic_menu_delete"
+            android:contentDescription="Eliminar baraja"
+            app:icon="@drawable/baseline_delete_outline_24"
             app:iconTint="?attr/colorError"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

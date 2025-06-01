@@ -54,6 +54,7 @@
         <item name="colorOnCustomColor2">@color/colorOnCustomColor2</item>
         <item name="colorCustomColor2Container">@color/colorCustomColor2Container</item>
         <item name="colorOnCustomColor2Container">@color/colorOnCustomColor2Container</item>
+        <item name="homeAsUpIndicator">?attr/colorOnSurface</item>
     </style>
 
     <!-- Estilos de tipografía -->
