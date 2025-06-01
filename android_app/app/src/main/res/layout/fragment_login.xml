@@ -77,7 +77,7 @@
                 android:layout_marginTop="40dp"
                 android:hint="Email"
                 android:textColorHint="?attr/colorOnPrimary"
-                app:startIconDrawable="@android:drawable/ic_dialog_email"
+                app:startIconDrawable="@drawable/baseline_email_24"
                 app:startIconTint="?attr/colorOnPrimary"
                 app:boxStrokeColor="?attr/colorOnPrimary"
                 app:hintTextColor="?attr/colorOnPrimary"
