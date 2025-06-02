@@ -1,31 +1,22 @@
-import logging
-from django.core.management.base import BaseCommand, CommandError
-from api.core.rag_processor import RAGProcessor
+#!/usr/bin/env python
+"""Utilidad de línea de comandos de Django para tareas administrativas."""
+import os
+import sys
 
-logger = logging.getLogger('api.core')
+
+def main():
+   """Ejecuta tareas administrativas de Django."""
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kairoscope_project.settings')
+   try:
+       from django.core.management import execute_from_command_line
+   except ImportError as exc:
+       raise ImportError(
+           "No se pudo importar Django. ¿Estás seguro de que está instalado y "
+           "disponible en tu variable de entorno PYTHONPATH? ¿Se te olvidó "
+           "activar el entorno virtual?"
+       ) from exc
+   execute_from_command_line(sys.argv)
 
 
-class Command(BaseCommand):
-    """Django command to build and save FAISS vector store from knowledge base."""
-
-    help = 'Builds FAISS vector store from JSONL files in knowledge_base directory'
-
-    def handle(self, *args, **options):
-        logger.info("Starting RAG vector store build process")
-
-        try:
-            processor = RAGProcessor()
-            processor.process_and_save_vector_store()
-
-            self.stdout.write(
-                self.style.SUCCESS(
-                    "✓ Vector store built and saved successfully")
-            )
-            logger.info("RAG management command completed successfully")
-
-        except ValueError as ve:
-            logger.error(f"Configuration error in RAG command: {ve}")
-            raise CommandError(f"Configuration error: {ve}")
-        except Exception as e:
-            logger.error(f"Unexpected error in RAG command: {e}")
-            raise CommandError(f"Unexpected error: {e}")
+if __name__ == '__main__':
+   main()

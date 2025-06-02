@@ -2,7 +2,6 @@ import json
 import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 from .firebase_config import initialize_firebase, verify_id_token
 from .models import UserProfile, Deck, Card
 from .core.deck_generator import DeckGenerator
