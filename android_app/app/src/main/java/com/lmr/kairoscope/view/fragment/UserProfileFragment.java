@@ -90,8 +90,13 @@ public class UserProfileFragment extends Fragment {
                         userProfile.getEmail() : "email@ejemplo.com");
 
                 // Llenar campos editables
-                editTextName.setText(userProfile.getDisplayName());
-                editTextEmail.setText(userProfile.getEmail());
+                if (editTextName != null) {
+                    editTextName.setText(userProfile.getDisplayName());
+                }
+
+                if (editTextEmail != null) {
+                    editTextEmail.setText(userProfile.getEmail());
+                }
             }
         });
 
@@ -160,19 +165,13 @@ public class UserProfileFragment extends Fragment {
         String newPassword = editTextNewPassword.getText().toString().trim();
         String confirmPassword = editTextConfirmPassword.getText().toString().trim();
 
-        // Validar si hay cambios en el perfil
+        // Solo actualizar nombre si cambió
         if (!newName.isEmpty()) {
             viewModel.updateProfile(newName);
         }
 
-        // Validar si quiere cambiar contraseña (todos los campos llenos)
-        if (!currentPassword.isEmpty() || !newPassword.isEmpty() || !confirmPassword.isEmpty()) {
-            if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-                Snackbar.make(requireView(), "Para cambiar contraseña, completa todos los campos",
-                        Snackbar.LENGTH_SHORT).show();
-                return;
-            }
-
+        // Solo cambiar contraseña si todos los campos están llenos
+        if (!currentPassword.isEmpty() && !newPassword.isEmpty() && !confirmPassword.isEmpty()) {
             if (newPassword.length() < 6) {
                 Snackbar.make(requireView(), "La contraseña debe tener al menos 6 caracteres",
                         Snackbar.LENGTH_SHORT).show();

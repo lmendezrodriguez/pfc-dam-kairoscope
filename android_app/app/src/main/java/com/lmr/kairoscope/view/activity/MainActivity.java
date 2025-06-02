@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
             // Listener para toolbar
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destinationId = destination.getId();
-                if (destinationId == R.id.loginFragment || destinationId == R.id.registerFragment) {
+                if (destinationId == R.id.loginFragment || destinationId == R.id.registerFragment || destinationId == R.id.deckDetailFragment) {
                     toolbar.setVisibility(View.GONE);
                 } else {
                     toolbar.setVisibility(View.VISIBLE);

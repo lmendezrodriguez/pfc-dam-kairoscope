@@ -16,8 +16,8 @@
         android:text="MI PERFIL"
         android:textAppearance="?attr/textAppearanceHeadlineMedium"
         android:textColor="?attr/colorOnBackground"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/textViewSubtitle"/>
+        app:layout_constraintBottom_toTopOf="@+id/textViewSubtitle"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/textViewSubtitle"
@@ -27,8 +27,8 @@
         android:text="Gestiona tu cuenta y preferencias"
         android:textAppearance="?attr/textAppearanceBodyMedium"
         android:textColor="?attr/colorOnSurfaceVariant"
-        app:layout_constraintStart_toStartOf="@+id/textViewWelcome"
-        app:layout_constraintBottom_toTopOf="@+id/cardProfile"/>
+        app:layout_constraintBottom_toTopOf="@+id/cardProfile"
+        app:layout_constraintStart_toStartOf="@+id/textViewWelcome" />
 
     <!-- Card principal con el perfil -->
     <androidx.cardview.widget.CardView
@@ -38,10 +38,10 @@
         app:cardBackgroundColor="?attr/colorPrimary"
         app:cardCornerRadius="24dp"
         app:cardElevation="8dp"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -61,9 +61,9 @@
                     app:cardBackgroundColor="?attr/colorSurface"
                     app:cardCornerRadius="40dp"
                     app:cardElevation="4dp"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <ImageView
                         android:id="@+id/imageViewAvatar"
@@ -72,7 +72,7 @@
                         android:layout_gravity="center"
                         android:contentDescription="Avatar"
                         android:src="@drawable/ic_account_circle_24dp"
-                        android:tint="?attr/colorPrimary" />
+                        app:tint="?attr/colorPrimary" />
                 </androidx.cardview.widget.CardView>
 
                 <!-- User Info Display -->
@@ -85,9 +85,9 @@
                     android:textAppearance="?attr/textAppearanceTitleLarge"
                     android:textColor="?attr/colorOnPrimary"
                     android:textStyle="bold"
-                    app:layout_constraintTop_toBottomOf="@+id/cardAvatar"
-                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cardAvatar"
                     tools:text="Nombre Usuario" />
 
                 <TextView
@@ -99,9 +99,9 @@
                     android:gravity="center"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     android:textColor="?attr/colorOnPrimary"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewUserName"
-                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewUserName"
                     tools:text="email@ejemplo.com" />
 
                 <!-- Nombre Field -->
@@ -113,13 +113,13 @@
                     android:layout_marginTop="32dp"
                     android:hint="Nombre completo"
                     android:textColorHint="?attr/colorOnPrimary"
-                    app:startIconDrawable="@drawable/ic_account_circle_24dp"
-                    app:startIconTint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
-                    app:layout_constraintTop_toBottomOf="@+id/textViewUserEmail"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:layout_constraintTop_toBottomOf="@+id/textViewUserEmail"
+                    app:startIconDrawable="@drawable/ic_account_circle_24dp"
+                    app:startIconTint="?attr/colorOnPrimary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextName"
@@ -138,20 +138,19 @@
                     android:layout_marginTop="16dp"
                     android:hint="Correo electrónico"
                     android:textColorHint="?attr/colorOnPrimary"
-                    app:startIconDrawable="@drawable/baseline_email_24"
-                    app:startIconTint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
-                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutName"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutName"
+                    app:startIconDrawable="@drawable/baseline_email_24"
+                    app:startIconTint="?attr/colorOnPrimary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress"
-                        android:enabled="false"
                         android:textColor="?attr/colorOnPrimary" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -164,22 +163,26 @@
                     android:layout_marginTop="24dp"
                     android:hint="Contraseña actual"
                     android:textColorHint="?attr/colorOnPrimary"
-                    app:startIconDrawable="@android:drawable/ic_lock_lock"
-                    app:startIconTint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutEmail"
                     app:passwordToggleEnabled="true"
                     app:passwordToggleTint="?attr/colorOnPrimary"
-                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutEmail"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:startIconDrawable="@android:drawable/ic_lock_lock"
+                    app:startIconTint="?attr/colorOnPrimary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextCurrentPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
-                        android:textColor="?attr/colorOnPrimary" />
+                        android:textColor="?attr/colorOnPrimary"
+                        android:textCursorDrawable="@null"
+                        android:textSelectHandle="@null"
+                        android:textSelectHandleLeft="@null"
+                        android:textSelectHandleRight="@null" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Nueva Contraseña -->
@@ -191,22 +194,26 @@
                     android:layout_marginTop="16dp"
                     android:hint="Nueva contraseña"
                     android:textColorHint="?attr/colorOnPrimary"
-                    app:startIconDrawable="@android:drawable/ic_lock_lock"
-                    app:startIconTint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutCurrentPassword"
                     app:passwordToggleEnabled="true"
                     app:passwordToggleTint="?attr/colorOnPrimary"
-                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutCurrentPassword"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:startIconDrawable="@android:drawable/ic_lock_lock"
+                    app:startIconTint="?attr/colorOnPrimary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextNewPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
-                        android:textColor="?attr/colorOnPrimary" />
+                        android:textColor="?attr/colorOnPrimary"
+                        android:textCursorDrawable="@null"
+                        android:textSelectHandle="@null"
+                        android:textSelectHandleLeft="@null"
+                        android:textSelectHandleRight="@null" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Confirmar Contraseña -->
@@ -218,22 +225,26 @@
                     android:layout_marginTop="16dp"
                     android:hint="Confirmar nueva contraseña"
                     android:textColorHint="?attr/colorOnPrimary"
-                    app:startIconDrawable="@android:drawable/ic_lock_lock"
-                    app:startIconTint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutNewPassword"
                     app:passwordToggleEnabled="true"
                     app:passwordToggleTint="?attr/colorOnPrimary"
-                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutNewPassword"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:startIconDrawable="@android:drawable/ic_lock_lock"
+                    app:startIconTint="?attr/colorOnPrimary">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/editTextConfirmPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
-                        android:textColor="?attr/colorOnPrimary" />
+                        android:textColor="?attr/colorOnPrimary"
+                        android:textCursorDrawable="@null"
+                        android:textSelectHandle="@null"
+                        android:textSelectHandleLeft="@null"
+                        android:textSelectHandleRight="@null" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Botón Guardar Cambios -->
@@ -246,9 +257,9 @@
                     android:text="Guardar Cambios"
                     android:textColor="?attr/colorPrimary"
 
-                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutConfirmPassword"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/textInputLayoutConfirmPassword" />
 
                 <!-- Botón Logout -->
                 <com.google.android.material.button.MaterialButton
@@ -261,9 +272,9 @@
                     android:text="Cerrar Sesión"
                     android:textColor="?attr/colorOnPrimary"
 
-                    app:layout_constraintTop_toBottomOf="@+id/buttonSaveChanges"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/buttonSaveChanges" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>

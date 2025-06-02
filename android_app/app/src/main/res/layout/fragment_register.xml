@@ -76,10 +76,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="40dp"
                 android:hint="@string/nombre"
+                android:textColorHint="?attr/colorOnPrimary"
+                app:hintTextColor="?attr/colorOnPrimary"
                 app:startIconDrawable="@drawable/ic_account_circle_24dp"
                 app:startIconTint="?attr/colorOnPrimary"
                 app:boxStrokeColor="?attr/colorOnPrimary"
-                android:textColorHint="?attr/colorOnPrimary"
                 app:layout_constraintTop_toBottomOf="@+id/cardLogo"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -89,7 +90,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPersonName|textCapWords"
-                    android:textColor="?attr/colorOnPrimary" />
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textCursorDrawable="@null"
+                    android:textSelectHandle="@null"
+                    android:textSelectHandleLeft="@null"
+                    android:textSelectHandleRight="@null" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Campo Email -->
@@ -100,10 +105,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:hint="@string/email"
+                android:textColorHint="?attr/colorOnPrimary"
+                app:hintTextColor="?attr/colorOnPrimary"
                 app:startIconDrawable="@drawable/baseline_email_24"
                 app:startIconTint="?attr/colorOnPrimary"
                 app:boxStrokeColor="?attr/colorOnPrimary"
-                android:textColorHint="?attr/colorOnPrimary"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayoutName"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -113,7 +119,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textEmailAddress"
-                    android:textColor="?attr/colorOnPrimary" />
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textCursorDrawable="@null"
+                    android:textSelectHandle="@null"
+                    android:textSelectHandleLeft="@null"
+                    android:textSelectHandleRight="@null" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Campo Password -->
@@ -124,10 +134,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:hint="Contraseña"
+                android:textColorHint="?attr/colorOnPrimary"
+                app:hintTextColor="?attr/colorOnPrimary"
                 app:startIconDrawable="@android:drawable/ic_lock_lock"
                 app:startIconTint="?attr/colorOnPrimary"
                 app:boxStrokeColor="?attr/colorOnPrimary"
-                android:textColorHint="?attr/colorOnPrimary"
                 app:passwordToggleEnabled="true"
                 app:passwordToggleTint="?attr/colorOnPrimary"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayoutEmail"
@@ -139,7 +150,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
-                    android:textColor="?attr/colorOnPrimary" />
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textCursorDrawable="@null"
+                    android:textSelectHandle="@null"
+                    android:textSelectHandleLeft="@null"
+                    android:textSelectHandleRight="@null" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Campo Repetir Password -->
@@ -150,10 +165,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:hint="@string/repetir_contrase_a"
+                android:textColorHint="?attr/colorOnPrimary"
+                app:hintTextColor="?attr/colorOnPrimary"
                 app:startIconDrawable="@android:drawable/ic_lock_lock"
                 app:startIconTint="?attr/colorOnPrimary"
                 app:boxStrokeColor="?attr/colorOnPrimary"
-                android:textColorHint="?attr/colorOnPrimary"
                 app:passwordToggleEnabled="true"
                 app:passwordToggleTint="?attr/colorOnPrimary"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayoutPassword"
@@ -165,7 +181,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
-                    android:textColor="?attr/colorOnPrimary" />
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textCursorDrawable="@null"
+                    android:textSelectHandle="@null"
+                    android:textSelectHandleLeft="@null"
+                    android:textSelectHandleRight="@null" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Botón Register -->
