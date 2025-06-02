@@ -1,3 +1,7 @@
+"""
+Configuración de la aplicación API con inicialización automática del vector store RAG.
+Gestiona la carga del retriever FAISS al arrancar Django, evitando comandos innecesarios.
+"""
 import os
 import sys
 import logging
@@ -20,21 +24,25 @@ class ApiConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'api'
 
-    # Retriever compartido para toda la aplicación
+    # Retriever compartido globalmente para evitar recargas múltiples
     vector_store_retriever: Optional[VectorStoreRetriever] = None
 
     def ready(self):
-        """Carga el vector store retriever al iniciar la aplicación."""
+        """
+        Carga el vector store retriever al iniciar la aplicación.
+        Se ejecuta una vez por proceso cuando Django se inicializa.
+        """
 
-        # Comandos que no necesitan vector store
+        # Comandos de Django que no requieren el vector store
         SKIP_COMMANDS = ['makemigrations', 'migrate', 'collectstatic',
                          'test', 'shell', 'dbshell', 'process_rag']
 
         current_command = sys.argv[1] if len(sys.argv) > 1 else None
         is_runserver = 'runserver' in sys.argv
+        # En desarrollo, runserver crea dos procesos (principal y worker)
         is_main_process = os.environ.get('RUN_MAIN') == 'true'
 
-        # Solo cargar en proceso principal de runserver o servidores de producción
+        # Evita cargar el vector store en comandos administrativos o procesos secundarios
         should_skip = (
                 current_command in SKIP_COMMANDS or
                 (is_runserver and not is_main_process)
@@ -51,7 +59,10 @@ class ApiConfig(AppConfig):
         self._load_vector_store()
 
     def _load_vector_store(self):
-        """Carga el vector store FAISS y crea el retriever."""
+        """
+        Carga el vector store FAISS y crea el retriever.
+        Inicializa los embeddings y configura el retriever para búsquedas RAG.
+        """
         logger.info("Loading FAISS vector store retriever")
 
         try:
@@ -64,18 +75,18 @@ class ApiConfig(AppConfig):
                 ApiConfig.vector_store_retriever = None
                 return
 
-            # Inicializar embeddings para cargar el vector store
+            # Inicializar modelo de embeddings compatible con el vector store guardado
             embeddings_model = RAGProcessor._initialize_embeddings()
             logger.debug("Embeddings model initialized for loading")
 
-            # Cargar vector store FAISS
+            # Cargar índice FAISS persistido desde disco
             vector_store = FAISS.load_local(
                 folder_path=vector_store_dir,
                 embeddings=embeddings_model,
-                allow_dangerous_deserialization=True
+                allow_dangerous_deserialization=True  # Necesario para cargar índices FAISS
             )
 
-            # Crear retriever
+            # Configurar retriever con 8 documentos más relevantes por búsqueda
             retriever = vector_store.as_retriever(search_kwargs={"k": 8})
             ApiConfig.vector_store_retriever = retriever
 
