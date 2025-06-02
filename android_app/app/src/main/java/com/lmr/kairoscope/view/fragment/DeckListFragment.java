@@ -132,10 +132,16 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
     private void setupListeners() {
         // FAB para crear nueva baraja
         fabCreateDeck.setOnClickListener(v -> {
-            try {
-                navController.navigate(R.id.action_deckListFragment_to_deckCreationFragment);
-            } catch (Exception e) {
-                Log.e(TAG, "Navigation error to DeckCreation: " + e.getMessage());
+            if (viewModel.canCreateNewDeck()) {
+                try {
+                    navController.navigate(R.id.action_deckListFragment_to_deckCreationFragment);
+                } catch (Exception e) {
+                    Log.e(TAG, "Navigation error to DeckCreation: " + e.getMessage());
+                }
+            } else {
+                Snackbar.make(requireView(),
+                        "Has alcanzado el límite de 8 barajas, borra una para poder generar una nueva",
+                        Snackbar.LENGTH_LONG).show();
             }
         });
     }
