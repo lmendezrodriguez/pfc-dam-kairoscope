@@ -165,4 +165,14 @@
     <color name="colorOnCustomColor2_highContrast">#000000</color>
     <color name="colorCustomColor2Container_highContrast">#FFAF96</color>
     <color name="colorOnCustomColor2Container_highContrast">#1D0300</color>
+    <color name="color_coral">#e24939</color>
+    <color name="color_cream">#f3e7cd</color>
+    <color name="color_ivory">#f8f2dc</color>
+    <color name="color_slate">#5a6576</color>
+    <color name="color_sage">#7fa87c</color>
+    <color name="color_amber">#f4a73f</color>
+    <color name="color_lavender">#9b7fb8</color>
+    <color name="color_teal">#4a9b8e</color>
+    <color name="color_rose">#d66b7a</color>
+    <color name="color_charcoal">#3c434f</color>
 </resources>
