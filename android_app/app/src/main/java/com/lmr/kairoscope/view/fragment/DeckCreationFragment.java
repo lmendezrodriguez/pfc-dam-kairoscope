@@ -1,12 +1,12 @@
 package com.lmr.kairoscope.view.fragment;
 
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
-import android.widget.TextView;
+import android.widget.GridLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,14 +36,7 @@ public class DeckCreationFragment extends Fragment {
     // UI Elements
     private TextInputEditText editTextDiscipline;
     private ChipGroup chipGroupBlockTags;
-    private View viewSelectedColor;
-    private SeekBar seekBarRed;
-    private SeekBar seekBarGreen;
-    private SeekBar seekBarBlue;
-    private TextView textViewRedValue;
-    private TextView textViewGreenValue;
-    private TextView textViewBlueValue;
-    private TextView textViewHexColor;
+    private GridLayout gridLayoutColors;
     private View buttonCreateDeck;
     private CircularProgressIndicator progressBar;
 
@@ -53,10 +46,15 @@ public class DeckCreationFragment extends Fragment {
     // NavController
     private NavController navController;
 
-    // Valores RGB actuales
-    private int redValue = 49;
-    private int greenValue = 98;
-    private int blueValue = 141;
+    // Color seleccionado
+    private String selectedColor = "#e24939";
+    private View selectedColorView = null;
+
+    // Colores disponibles
+    private final String[] colorOptions = {
+            "#e24939", "#f3e7cd", "#f8f2dc", "#5a6576", "#7fa87c",
+            "#f4a73f", "#9b7fb8", "#4a9b8e", "#d66b7a", "#3c434f"
+    };
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -65,14 +63,7 @@ public class DeckCreationFragment extends Fragment {
         // Obtener referencias a las vistas
         editTextDiscipline = view.findViewById(R.id.editTextDiscipline);
         chipGroupBlockTags = view.findViewById(R.id.chipGroupBlockTags);
-        viewSelectedColor = view.findViewById(R.id.viewSelectedColor);
-        seekBarRed = view.findViewById(R.id.seekBarRed);
-        seekBarGreen = view.findViewById(R.id.seekBarGreen);
-        seekBarBlue = view.findViewById(R.id.seekBarBlue);
-        textViewRedValue = view.findViewById(R.id.textViewRedValue);
-        textViewGreenValue = view.findViewById(R.id.textViewGreenValue);
-        textViewBlueValue = view.findViewById(R.id.textViewBlueValue);
-        textViewHexColor = view.findViewById(R.id.textViewHexColor);
+        gridLayoutColors = view.findViewById(R.id.gridLayoutColors);
         buttonCreateDeck = view.findViewById(R.id.buttonCreateDeck);
         progressBar = view.findViewById(R.id.progressBar);
 
@@ -90,7 +81,7 @@ public class DeckCreationFragment extends Fragment {
                 .get(DeckCreationViewModel.class);
 
         setupObservers();
-        setupColorControls();
+        setupColorCircles();
         setupBlockTagChips();
 
         buttonCreateDeck.setOnClickListener(v -> createDeck());
@@ -100,9 +91,7 @@ public class DeckCreationFragment extends Fragment {
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             editTextDiscipline.setEnabled(!isLoading);
-            seekBarRed.setEnabled(!isLoading);
-            seekBarGreen.setEnabled(!isLoading);
-            seekBarBlue.setEnabled(!isLoading);
+            gridLayoutColors.setEnabled(!isLoading);
             buttonCreateDeck.setEnabled(!isLoading);
         });
 
@@ -129,54 +118,86 @@ public class DeckCreationFragment extends Fragment {
         });
     }
 
-    private void setupColorControls() {
-        SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    if (seekBar.getId() == R.id.seekBarRed) {
-                        redValue = progress;
-                        textViewRedValue.setText(String.valueOf(progress));
-                    } else if (seekBar.getId() == R.id.seekBarGreen) {
-                        greenValue = progress;
-                        textViewGreenValue.setText(String.valueOf(progress));
-                    } else if (seekBar.getId() == R.id.seekBarBlue) {
-                        blueValue = progress;
-                        textViewBlueValue.setText(String.valueOf(progress));
-                    }
-                    updateColorPreview();
-                }
+    private void setupColorCircles() {
+        int circleSize = (int) (40 * getResources().getDisplayMetrics().density); // 40dp en px
+        int margin = (int) (12 * getResources().getDisplayMetrics().density); // 12dp en px
+
+        for (int i = 0; i < colorOptions.length; i++) {
+            View colorCircle = new View(requireContext());
+
+            // Configurar parámetros para GridLayout
+            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+            params.width = circleSize;
+            params.height = circleSize;
+            params.setMargins(margin, margin, margin, margin);
+            colorCircle.setLayoutParams(params);
+
+            // Crear drawable circular
+            GradientDrawable drawable = new GradientDrawable();
+            drawable.setShape(GradientDrawable.OVAL);
+            try {
+                drawable.setColor(Color.parseColor(colorOptions[i]));
+            } catch (Exception e) {
+                drawable.setColor(Color.GRAY);
             }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            colorCircle.setBackground(drawable);
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        };
+            final String color = colorOptions[i];
 
-        seekBarRed.setOnSeekBarChangeListener(seekBarChangeListener);
-        seekBarGreen.setOnSeekBarChangeListener(seekBarChangeListener);
-        seekBarBlue.setOnSeekBarChangeListener(seekBarChangeListener);
+            colorCircle.setOnClickListener(v -> {
+                selectColor(colorCircle, color);
+            });
 
-        seekBarRed.setProgress(redValue);
-        seekBarGreen.setProgress(greenValue);
-        seekBarBlue.setProgress(blueValue);
-        textViewRedValue.setText(String.valueOf(redValue));
-        textViewGreenValue.setText(String.valueOf(greenValue));
-        textViewBlueValue.setText(String.valueOf(blueValue));
+            gridLayoutColors.addView(colorCircle);
 
-        updateColorPreview();
+            // Seleccionar el primer color por defecto
+            if (i == 0) {
+                selectColor(colorCircle, color);
+            }
+        }
     }
 
-    private void updateColorPreview() {
-        int color = Color.rgb(redValue, greenValue, blueValue);
-        viewSelectedColor.setBackgroundColor(color);
+    private void selectColor(View colorView, String color) {
+        // Deseleccionar el anterior
+        if (selectedColorView != null) {
+            updateCircleSelection(selectedColorView, false);
+        }
 
-        String hexColor = String.format("#%02X%02X%02X", redValue, greenValue, blueValue);
-        textViewHexColor.setText(hexColor);
+        // Seleccionar el nuevo
+        selectedColorView = colorView;
+        selectedColor = color;
+        updateCircleSelection(colorView, true);
 
-        viewModel.setSelectedColor(hexColor);
+        viewModel.setSelectedColor(selectedColor);
+    }
+
+    private void updateCircleSelection(View colorView, boolean isSelected) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.OVAL);
+
+        // Obtener el color de fondo
+        String color = selectedColor;
+        if (!isSelected) {
+            // Encontrar el color de esta vista
+            int index = gridLayoutColors.indexOfChild(colorView);
+            if (index >= 0 && index < colorOptions.length) {
+                color = colorOptions[index];
+            }
+        }
+
+        try {
+            drawable.setColor(Color.parseColor(color));
+        } catch (Exception e) {
+            drawable.setColor(Color.GRAY);
+        }
+
+        if (isSelected) {
+            // Agregar borde para indicar selección
+            drawable.setStroke(8, Color.parseColor("#31628D")); // Color primario, borde más grueso
+        }
+
+        colorView.setBackground(drawable);
     }
 
     private void createDeck() {
@@ -193,6 +214,7 @@ public class DeckCreationFragment extends Fragment {
         }
 
         viewModel.setDiscipline(discipline);
+        viewModel.setSelectedColor(selectedColor);
         viewModel.createDeck();
     }
 
@@ -230,12 +252,20 @@ public class DeckCreationFragment extends Fragment {
 
     private void clearFields() {
         editTextDiscipline.setText("");
-        // Limpiar chips seleccionados
+
+        // Limpiar chips de bloqueo seleccionados
         for (int i = 0; i < chipGroupBlockTags.getChildCount(); i++) {
             Chip chip = (Chip) chipGroupBlockTags.getChildAt(i);
             chip.setChecked(false);
         }
         selectedTags.clear();
+
+        // Resetear color al primero
+        if (gridLayoutColors.getChildCount() > 0) {
+            View firstCircle = gridLayoutColors.getChildAt(0);
+            selectColor(firstCircle, colorOptions[0]);
+        }
+
         updateBlockDescription();
     }
 
@@ -244,16 +274,10 @@ public class DeckCreationFragment extends Fragment {
         super.onDestroyView();
         editTextDiscipline = null;
         chipGroupBlockTags = null;
-        viewSelectedColor = null;
-        seekBarRed = null;
-        seekBarGreen = null;
-        seekBarBlue = null;
-        textViewRedValue = null;
-        textViewGreenValue = null;
-        textViewBlueValue = null;
-        textViewHexColor = null;
+        gridLayoutColors = null;
         buttonCreateDeck = null;
         progressBar = null;
         selectedTags.clear();
+        selectedColorView = null;
     }
 }

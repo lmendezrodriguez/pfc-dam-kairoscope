@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="card_back_colors">
+        <item>@color/color_coral</item>
+        <item>@color/md_theme_tertiaryFixed_highContrast</item>
+        <item>@color/color_slate</item>
+        <item>@color/color_sage</item>
+        <item>@color/color_amber</item>
+        <item>@color/color_lavender</item>
+        <item>@color/color_teal</item>
+    </string-array>
+</resources>

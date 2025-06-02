@@ -1,12 +1,14 @@
 package com.lmr.kairoscope.adapters;
 
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import com.google.android.material.card.MaterialCardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
@@ -27,7 +29,6 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.DeckVi
 
     private List<Deck> deckList = new ArrayList<>();
     private OnDeckClickListener onDeckClickListener;
-
 
     public interface OnDeckClickListener {
         void onDeckClick(Deck deck);
@@ -69,7 +70,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.DeckVi
         private TextView textViewDeckName;
         private TextView textViewDiscipline;
         private TextView textViewCardCount;
-        private View viewColorIndicator;
+        private TextView textViewCreationDate;
         private MaterialButton buttonDelete;
 
         public DeckViewHolder(@NonNull View itemView) {
@@ -77,8 +78,9 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.DeckVi
             textViewDeckName = itemView.findViewById(R.id.textViewDeckName);
             textViewDiscipline = itemView.findViewById(R.id.textViewDiscipline);
             textViewCardCount = itemView.findViewById(R.id.textViewCardCount);
-            viewColorIndicator = itemView.findViewById(R.id.viewColorIndicator);
+            textViewCreationDate = itemView.findViewById(R.id.textViewCreationDate);
             buttonDelete = itemView.findViewById(R.id.buttonDeleteDeck);
+            textViewCreationDate = itemView.findViewById(R.id.textViewCreationDate);
 
             itemView.setOnClickListener(v -> {
                 if (onDeckClickListener != null) {
@@ -101,16 +103,27 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.DeckVi
         public void bind(Deck deck) {
             textViewDeckName.setText(deck.getName());
             textViewDiscipline.setText(deck.getDiscipline());
+            textViewCardCount.setText(deck.getCard_count() + " cartas");
+            textViewCreationDate.setText("Creado " + formatDate(deck.getCreated_at()));
 
-            String cardCountText = deck.getCard_count() + " cartas • Creado " + formatDate(deck.getCreated_at());
-            textViewCardCount.setText(cardCountText);
-
-            // Set color indicator
+            // Aplicar color del borde y del chip de disciplina
             try {
                 int color = Color.parseColor(deck.getChosen_color());
-                viewColorIndicator.setBackgroundColor(color);
+                ((MaterialCardView) itemView).setStrokeColor(color);
+
+                // Cambiar color del fondo del chip de disciplina
+                GradientDrawable drawable = (GradientDrawable) textViewDiscipline.getBackground();
+                drawable.setColor(color);
+
+                // Ajustar color del texto según luminosidad
+                if (isColorDark(color)) {
+                    textViewDiscipline.setTextColor(Color.WHITE);
+                } else {
+                    textViewDiscipline.setTextColor(Color.BLACK);
+                }
+
             } catch (Exception e) {
-                viewColorIndicator.setBackgroundColor(Color.parseColor("#31628D"));
+                textViewDiscipline.setTextColor(Color.WHITE);
             }
         }
 
@@ -123,6 +136,10 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.DeckVi
             } catch (Exception e) {
                 return "Reciente";
             }
+        }
+        private boolean isColorDark(int color) {
+            double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
+            return darkness >= 0.5;
         }
     }
 }

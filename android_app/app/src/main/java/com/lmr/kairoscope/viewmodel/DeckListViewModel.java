@@ -33,7 +33,6 @@ public class DeckListViewModel extends ViewModel {
 
             if (result != null) {
                 if (result.isSuccess()) {
-                    message.postValue("Barajas cargadas correctamente");
                 } else {
                     message.postValue("Error al cargar las barajas. Comprueba tu conexión");
                 }
@@ -86,6 +85,14 @@ public class DeckListViewModel extends ViewModel {
     public void deleteDeck(int deckId) {
         isLoading.setValue(true);
         deckRepository.deleteDeck(deckId);
+    }
+    public boolean canCreateNewDeck() {
+        DeckListResponse currentResponse = getDeckListResult().getValue();
+        if (currentResponse != null && currentResponse.isSuccess() &&
+                currentResponse.getDecks() != null) {
+            return currentResponse.getDecks().size() < 8;
+        }
+        return true; // Si no hay datos, permitir intento
     }
 
     // Factory para crear el ViewModel

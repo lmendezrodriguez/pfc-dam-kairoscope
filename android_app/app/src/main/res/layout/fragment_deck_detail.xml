@@ -7,89 +7,106 @@
     android:padding="16dp"
     tools:context=".view.fragment.DeckDetailFragment">
 
-    <!-- Información de la baraja -->
-    <TextView
-        android:id="@+id/textViewDeckName"
+    <!-- Solo la carta, centrada y grande -->
+    <FrameLayout
+        android:id="@+id/cardContainer"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textAppearance="?attr/textAppearanceHeadlineMedium"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="Estrategias Oblicuas" />
+        app:layout_constraintDimensionRatio="3:2">
 
-    <TextView
-        android:id="@+id/textViewDiscipline"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:textAppearance="?attr/textAppearanceBodyLarge"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewDeckName"
-        tools:text="Música" />
-
-    <!-- Card display area -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardViewCurrentCard"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="32dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewDiscipline">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- Carta trasera -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewBack"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="24dp">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="12dp"
+            app:cardBackgroundColor="?attr/colorPrimary">
 
-            <TextView
-                android:id="@+id/textViewCardText"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:gravity="center"
-                android:textAlignment="center"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="Abraza la limitación como una puerta a la creatividad inesperada." />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="40dp">
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                <!-- Título de la baraja -->
+                <TextView
+                    android:id="@+id/textViewDeckName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:layout_marginBottom="8dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="Estrategias Oblicuas" />
 
-    </androidx.cardview.widget.CardView>
+                <!-- Disciplina -->
+                <TextView
+                    android:id="@+id/textViewDiscipline"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:alpha="0.8"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewDeckName"
+                    tools:text="Música" />
 
-    <!-- Botón para sacar carta -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/buttonDrawCard"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="32dp"
-        android:layout_marginTop="32dp"
-        android:paddingVertical="12dp"
-        android:text="Sacar carta"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cardViewCurrentCard" />
+                <!-- Logo centrado -->
+                <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:contentDescription="Logo"
+                    android:src="@drawable/formas_kai"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textViewDiscipline" />
 
-    <!-- Info adicional -->
-    <TextView
-        android:id="@+id/textViewCardCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textAppearance="?attr/textAppearanceBodySmall"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonDrawCard"
-        tools:text="123 cartas disponibles" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Carta frontal -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardViewFront"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="12dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="40dp">
+
+                <TextView
+                    android:id="@+id/textViewCardText"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="Tu estrategia aparecerá aquí" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </FrameLayout>
 
     <!-- ProgressBar -->
     <com.google.android.material.progressindicator.CircularProgressIndicator

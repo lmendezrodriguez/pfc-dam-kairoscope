@@ -43,7 +43,6 @@ public class DeckDetailViewModel extends ViewModel {
 
             if (result != null && result.isSuccess()) {
                 currentDeck.postValue(result.getDeck());
-                message.postValue("Baraja cargada correctamente");
             } else {
                 message.postValue("Error al cargar la baraja");
             }
