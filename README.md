@@ -1,61 +1,129 @@
 # 🔮 kAIroscope
 
-Una aplicación Android que genera barajas personalizadas de estrategias oblicuas para superar bloqueos creativos, utilizando IA generativa y técnicas RAG (Retrieval-Augmented Generation).
+<img src="https://raw.githubusercontent.com/lmendezrodriguez/pfc-dam-kairoscope/main/kairoscope%20rectangular.png" alt="kAIroscope Logo" width="400">
 
-## 📋 Descripción
+![Badge de estado](https://img.shields.io/badge/STATUS-EN%20DESARROLLO-green)
+![Badge de licencia](https://img.shields.io/badge/license-MIT-blue)
 
-kAIroscope combina el concepto de "Estrategias Oblicuas" de Brian Eno y Peter Schmidt con tecnología de IA moderna para ofrecer sugerencias creativas adaptadas a tu disciplina, tipo de bloqueo y estado de ánimo.
+> *"Desbloquea tu imaginación"*  
+> Una reiterpretación de las Estrategias Oblicuas para la era de la IA
 
-La aplicación te permite:
-- Crear barajas personalizadas de 123 estrategias
-- Guardar múltiples barajas según diferentes contextos creativos
-- Explorar estrategias aleatorias cuando necesites inspiración
+## Índice
+- [Descripción del proyecto](#descripción-del-proyecto)
+- [Estado del proyecto](#estado-del-proyecto)
+- [Características y demostración](#características-y-demostración)
+- [Acceso al proyecto](#acceso-al-proyecto)
+- [Cómo abrir y ejecutar el proyecto](#cómo-abrir-y-ejecutar-el-proyecto)
+- [Tecnologías utilizadas](#tecnologías-utilizadas)
+- [Personas desarrolladoras del proyecto](#personas-desarrolladoras-del-proyecto)
+- [Licencia](#licencia)
 
-## 🏗️ Arquitectura
+## Descripción del Proyecto
+kAIroscope es una aplicación Android que reinventa las  **Estrategias Oblicuas** de Brian Eno y Peter Schmidt (1975) para la era de la inteligencia artificial. 
 
-### Frontend (Android)
-- **Patrón MVVM** (Model-View-ViewModel)
-- **Firebase Authentication** para gestión de usuarios
-- **Material Design 3** con tema personalizado y tipografías
-- Diseño responsive para diferentes tamaños de pantalla
+Cuando la inspiración se desvanece y te enfrentas a la página en blanco, kAIroscope genera barajas completamente personalizadas de **123 cartas únicas** con estrategias creativas adaptadas a tu disciplina artística, tu bloqueo específico y tu estado emocional. Cada carta es una ventana hacia el pensamiento lateral que necesitas para romper patrones y descubrir nuevas perspectivas.
 
-### Backend (Django)
-- **Firebase Admin SDK** para verificación de tokens
-- **Modelos Django** para persistencia de datos (UserProfile, Deck, Card)
-- **LLM/RAG** para generación de contenido personalizado
-- Vistas basadas en funciones para los endpoints API
+**🎓 Proyecto de Fin de Ciclo** - Desarrollo de Aplicaciones Multiplataforma (DAM) - Afundacion A Coruña 2025
 
-## 🔧 Stack Tecnológico
+## Estado del Proyecto
+🚧 **En construcción activa** 🚧
 
-- **Android:** Java, Retrofit, LiveData, Navigation Component
-- **Backend:** Python, Django, Firebase Admin
-- **Generación IA:** Gemini Pro, RAG (knowledge base embebida)
-- **Persistencia:** SQLite (Django ORM)
+Funcionalidades principales implementadas y funcionales.
 
-## 🛠️ Desarrollo
+## Características y Demostración
+- 🔐 `Autenticación Firebase`: Registro y login seguro con gestión de sesiones
+- 🤖 `Generación IA personalizada`: Powered by OpenAi con sistema RAG avanzado
+- 🎨 `Personalización profunda`: Por disciplina creativa, tipo de bloqueo y color emocional
+- 📚 `Biblioteca personal`: Hasta 8 barajas únicas guardadas por usuario
+- 🎲 `Magia aleatoria`: Extrae cartas al azar cuando necesites inspiración
+- ⚡ `Gestión completa`: Crear, visualizar, usar y eliminar barajas sin límites
+- 🌙 `Experiencia premium`: Modo oscuro y tipografías personalizadas
 
-Este proyecto forma parte del Proyecto Final de Ciclo de Desarrollo de Aplicaciones Multiplataforma (DAM). La implementación sigue prácticas modernas de desarrollo:
+*"El azar te guía cuando la lógica te abandona"*
 
-- Control de versiones Git con convenciones claras de commits
-- Separación de responsabilidades (repository, viewmodel, fragments)
-- Tipado fuerte en todas las capas
-- Diseño UI/UX cuidado y consistente
+## Acceso al Proyecto
+**Para acceder al código fuente:**
 
-## 🔄 API
+    git clone https://github.com/lmendezrodriguez/pfc-dam-kairoscope
 
-La aplicación se comunica con el backend Django mediante endpoints REST:
+## Cómo abrir y ejecutar el proyecto
 
-- `POST /api/decks/` - Crear una nueva baraja (requiere autenticación)
-- `GET /api/decks/` - Obtener todas las barajas del usuario
-- `GET /api/decks/{id}/` - Obtener detalles de una baraja específica
-- `DELETE /api/decks/{id}/` - Eliminar una baraja
+### Requisitos previos
+- Android Studio Iguana (2023.2) o superior
+- Python 3.8+
+- Java Development Kit 17
+- 🔑 **Credenciales necesarias**: Firebase Project configurado + OpenAI API Key
 
-## 📱 Compatibilidad
+### 🐍 Backend (Django)
 
-- Android 8.0 (API 26) o superior
-- Diseño adaptable a tablets y teléfonos
-- Soporte para modo claro/oscuro
+    cd backend_django
+    python -m venv venv
+    source venv/bin/activate
+    # En Windows: venv\Scripts\activate
+    pip install -r requirements.txt
+    python manage.py migrate
 
-## 👨‍💻 Autor
+**🧠 Preparación del conocimiento (RAG/Vector Store):**
 
-Lucía Méndez Rodríguez - Estudiante de Desarrollo de Aplicaciones Multiplataforma (DAM)
+Antes de generar estrategias, necesitas construir la base de conocimiento que alimentará la IA:
+
+    python manage.py process_rag
+
+Este comando personalizado procesa y vectoriza todo el corpus de estrategias oblicuas, manifiestos artísticos y textos creativos, creando el vector store FAISS que permite la generación contextual inteligente.
+
+**Iniciar servidor:**
+
+    python manage.py runserver
+
+### 📱 Frontend (Android)
+1. Abrir `android_app/` en Android Studio
+2. Añadir tu `google-services.json` en `app/src/`
+3. Sincronizar proyecto con Gradle Files
+4. Ejecutar en emulador Android o dispositivo físico
+
+### 🔐 Variables de entorno necesarias
+
+    # backend_django/.env
+    OPENAI_API_KEY=tu_clave_google_ai_gemini
+    FIREBASE_CREDENTIALS_PATH=ruta/a/firebase-credentials.json
+
+## Tecnologías utilizadas
+
+### 🎨 Frontend
+- **Android Nativo** (Java) con arquitectura MVVM
+- **Material Design 3** con temas personalizados
+- **Firebase Authentication** para identidad segura
+- **Retrofit + OkHttp** para comunicación API
+- **Navigation Component** para flujos intuitivos
+
+### ⚙️ Backend
+- **Django** con Vistas Basadas en Funciones (FBVs)
+- **LangChain** para orquestación RAG/LLM avanzada
+- **OpenAI** como cerebro generativo
+- **FAISS** para búsqueda vectorial semántica
+- **SQLite** para persistencia y gestión de usuarios
+
+### 🧬 Sistema RAG/LLM
+La magia ocurre aquí: un sistema de **Recuperación Aumentada por Generación** que combina:
+- Corpus diverso (estrategias originales + manifiestos artísticos + literatura) de datos estructurados y no estructurados
+- Tres tipos de búsqueda vectorial inteligente para contexto relevante: por similitud, por divergencia y al azar
+- Prompt engineering especializado para mantener el carácter "oblicuo"
+- Generación personalizada según disciplina y bloqueo específico
+
+## Personas desarrolladoras del proyecto
+| Lucía Méndez Rodríguez |
+| :---: |
+| *Filóloga outlier adentrándose en el mundo del desarrollo* |
+| *Estudiante DAM - Especializándose en IA aplicada* |
+
+> *"Este proyecto une mi pasión por la lengua y la literatura con mi curiosidad por la IA y el desarrollo, haciendo el determinismo de la programación un poco más indeterminado."*
+
+**📚 Contexto académico**: Proyecto de Fin de Ciclo (PFC) - DAM 2025 - Centro FP Afundación A Coruña
+
+## Licencia
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.md) para detalles.
+
+---
+### 🎭 Inspiración Original
+*Basado en las "Oblique Strategies" de **Brian Eno** y **Peter Schmidt** (1975)*  
+*"Más de 100 cartas, cada una con una frase críptica o aforismo, diseñadas para ayudar a los artistas a romper bloqueos creativos a través del pensamiento lateral."*
