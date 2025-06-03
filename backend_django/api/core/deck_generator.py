@@ -4,6 +4,7 @@ Combina recuperación de documentos con generación de IA para crear estrategias
 """
 import os
 import logging
+import json
 from typing import Dict, List, Any
 
 from langchain_openai import ChatOpenAI
@@ -200,10 +201,7 @@ class DeckGenerator:
         Genera estrategias usando LangChain y RAG.
         Recupera documentos relevantes y los usa como contexto para el LLM.
         """
-        import json
-        import logging
 
-        logger = logging.getLogger('api.core')
         logger.info(
             f"Generating {num_cards} strategies for discipline='{discipline}', block='{block_description}', color='{color}'")
 
