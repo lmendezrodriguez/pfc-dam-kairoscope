@@ -84,7 +84,7 @@ Este comando personalizado procesa y vectoriza todo el corpus de estrategias obl
 ### 🔐 Variables de entorno necesarias
 
     # backend_django/.env
-    OPENAI_API_KEY=tu_clave_google_ai_gemini
+    OPENAI_API_KEY=tu_clave_openai
     FIREBASE_CREDENTIALS_PATH=ruta/a/firebase-credentials.json
 
 ## Tecnologías utilizadas
