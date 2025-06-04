@@ -52,7 +52,7 @@ public class DeckCreationFragment extends Fragment {
 
     // Colores disponibles
     private final String[] colorOptions = {
-            "#e24939", "#f3e7cd", "#f8f2dc", "#5a6576", "#7fa87c",
+            "#e24939", "#f3e7cd", "#002fa7", "#5a6576", "#7fa87c",
             "#f4a73f", "#9b7fb8", "#4a9b8e", "#d66b7a", "#3c434f"
     };
 
@@ -194,7 +194,7 @@ public class DeckCreationFragment extends Fragment {
 
         if (isSelected) {
             // Agregar borde para indicar selección
-            drawable.setStroke(8, Color.parseColor("#31628D")); // Color primario, borde más grueso
+            drawable.setStroke(8, Color.parseColor("#1a1a2e")); // Color primario, borde más grueso
         }
 
         colorView.setBackground(drawable);
