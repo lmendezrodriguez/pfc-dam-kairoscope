@@ -1,5 +1,10 @@
+"""
+Generador de barajas de estrategias oblicuas usando LangChain y RAG.
+Combina recuperación de documentos con generación de IA para crear estrategias personalizadas.
+"""
 import os
 import logging
+import json
 from typing import Dict, List, Any
 
 from langchain_openai import ChatOpenAI
@@ -15,17 +20,16 @@ logger = logging.getLogger('api.core')
 
 class DeckGenerator:
     """
-    Generador de barajas de estrategias oblicuas usando LangChain, RAG y Gemini.
-    Depende de un retriever pre-cargado del vector store.
+    Generador de barajas de estrategias oblicuas usando LangChain, RAG y OpenAI.
+    Utiliza un retriever pre-cargado del vector store para contexto y un LLM para generación.
     """
 
     def __init__(self, retriever: VectorStoreRetriever):
         """
-        Inicializa el generador de barajas.
-
+        Inicializa el generador con un retriever de documentos.
+        
         Args:
-            retriever: Un retriever de LangChain cargado con el índice FAISS.
-                       Debe ser el retriever del índice creado previamente.
+            retriever: Retriever de LangChain con el índice FAISS cargado.
         """
         if not retriever:
             logger.error("No retriever provided to DeckGenerator")
@@ -33,31 +37,33 @@ class DeckGenerator:
                 "Se requiere un retriever cargado para inicializar DeckGenerator.")
         self.retriever = retriever
 
-        # Cargar configuración de la API de Google y el LLM
+        # Configurar modelo LLM con API key desde variables de entorno
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
-            logger.error("GOOGLE_API_KEY not found in environment")
+            logger.error("OPENAI_API_KEY not found in environment")
             raise ValueError(
-                "GOOGLE_API_KEY no encontrada en variables de entorno.")
+                "OPENAI_API_KEY no encontrada en variables de entorno.")
 
-        # Inicializar el modelo LLM usando LangChain
+        # Inicializar ChatGPT con parámetros optimizados para creatividad
         self.llm = ChatOpenAI(
-            model="gpt-4.1",  # o "gpt-4o" si prefieres
-            temperature=0.85,
+            model="gpt-4.1",
+            temperature=0.85,  # Alta creatividad para estrategias oblicuas
         )
 
-        logger.info("DeckGenerator initialized with Gemini LLM")
+        logger.info("DeckGenerator initialized with OpenAI LLM")
 
-        # Configurar las plantillas de prompts
+        # Configurar plantillas de prompts y cadenas de procesamiento
         self._setup_prompts()
-        # Configurar las cadenas de LangChain
         self._setup_chains()
 
     def _setup_prompts(self):
-        """Configura las plantillas de prompts para la generación."""
+        """
+        Configura las plantillas de prompts para generación de estrategias y nombres.
+        Define el estilo y estructura de las estrategias oblicuas.
+        """
         logger.debug("Setting up prompt templates")
 
-        # Plantilla para generar estrategias
+        # Prompt detallado para generación de estrategias oblicuas
         self.strategies_prompt = PromptTemplate.from_template(
             """Eres un generador de estrategias oblicuas, diseñadas para romper bloqueos creativos mediante el pensamiento lateral y las ideas tangenciales, no soluciones directas. Te inspiras en el estilo de Brian Eno y Peter Schmidt.
 
@@ -119,7 +125,7 @@ class DeckGenerator:
         Genera exactamente {num_cards} estrategias en el array."""
         )
 
-        # El name_prompt permanece igual
+        # Prompt para generar nombres evocativos de barajas
         self.name_prompt = PromptTemplate.from_template(
             """Genera un nombre corto en español (máximo 4 palabras), poético y evocativo para una baraja de estrategias creativas oblicuas inspirada por:
     - Disciplina: {discipline}
@@ -129,18 +135,21 @@ class DeckGenerator:
         )
 
     def _setup_chains(self):
-        """Configura las cadenas de LangChain para la generación."""
+        """
+        Configura las cadenas de LangChain para procesamiento RAG.
+        Conecta el retriever con los prompts y el modelo LLM.
+        """
         logger.debug("Setting up LangChain chains")
 
-        # Cadena para generar el nombre de la baraja
+        # Cadena simple para generar nombres de barajas
         self.name_chain = self.name_prompt | self.llm
 
-        # Cadena para combinar documentos y generar respuesta (estrategias)
+        # Cadena que combina documentos recuperados con el prompt de estrategias
         self.strategies_document_chain = create_stuff_documents_chain(
             self.llm, self.strategies_prompt
         )
 
-        # Cadena de recuperación completa (combina el retriever con la cadena de documentos)
+        # Cadena completa RAG: recuperación + generación
         self.retrieval_chain = create_retrieval_chain(
             self.retriever,
             self.strategies_document_chain
@@ -148,26 +157,27 @@ class DeckGenerator:
 
     def generate_deck(self, discipline: str, block_description: str,
                       color: str, num_cards: int = 123) -> Dict[str, Any]:
-        """Genera una baraja completa de estrategias oblicuas"""
+        """
+        Genera una baraja completa de estrategias oblicuas.
+        Combina generación de estrategias con naming automático.
+        """
         logger.info(
             f"Starting deck generation: {discipline}, {num_cards} cards")
 
         try:
-            # Generar estrategias usando LangChain
+            # Generar estrategias usando el pipeline RAG
             strategies = self._generate_with_langchain(
                 discipline, block_description, color, num_cards
             )
         except Exception as e:
             logger.error(f"Failed to generate strategies with LangChain: {e}")
-            # TODO: Implement better fallback strategy generation
             raise
 
-        # Generar nombre de baraja
+        # Generar nombre creativo para la baraja
         try:
             deck_name = self._generate_deck_name(discipline, color)
         except Exception as e:
             logger.error(f"Failed to generate deck name: {e}")
-            # TODO: Implement fallback deck naming
             raise
 
         logger.info(
@@ -187,31 +197,33 @@ class DeckGenerator:
 
     def _generate_with_langchain(self, discipline: str, block_description: str,
                                  color: str, num_cards: int) -> List[str]:
-        """Genera estrategias usando LangChain y RAG"""
-        import json
-        import logging
+        """
+        Genera estrategias usando LangChain y RAG.
+        Recupera documentos relevantes y los usa como contexto para el LLM.
+        """
 
-        logger = logging.getLogger('api.core')
         logger.info(
             f"Generating {num_cards} strategies for discipline='{discipline}', block='{block_description}', color='{color}'")
 
         try:
+            # Construir query para recuperación de documentos relevantes
             retriever_query = f"Estrategias oblicuas para {discipline}: {block_description}"
 
-            # Log retriever debugging info
+            # Usar retriever mixto para obtener diversidad de documentos
             logger.debug(f"Retriever query: {retriever_query}")
             mixed_docs = RAGProcessor.create_mixed_retriever(
                 self.retriever.vectorstore,
-                # Acceder al vector store desde el retriever
                 retriever_query,
-                k_sim=10, k_div=15, k_random=10
+                k_sim=10, k_div=15, k_random=10  # Mezcla de similitud, diversidad y aleatoriedad
             )
             logger.debug(
                 f"Retrieved {len(mixed_docs)} mixed documents (sim+div+random)")
 
+            # Log de documentos recuperados para debugging
             for i, doc in enumerate(mixed_docs):
                 logger.debug(f"Doc {i + 1}: {doc.page_content[:100]}...")
 
+            # Preparar input para la cadena RAG
             chain_input = {
                 "input": retriever_query,
                 "discipline": discipline,
@@ -220,24 +232,22 @@ class DeckGenerator:
                 "num_cards": num_cards,
             }
 
-            # Ejecutar la cadena de recuperación y generación
+            # Ejecutar cadena completa: recuperación + generación
             result = self.retrieval_chain.invoke(chain_input)
             raw_response = result.get("answer", "").strip()
 
-            # NUEVO: Parsear respuesta JSON
+            # Parsear respuesta JSON del LLM
             try:
                 logger.debug(f"Raw LLM response: {raw_response[:200]}...")
 
                 def extract_json_from_response(response: str) -> str:
-                    """Extrae JSON de respuesta, manejando markdown o JSON directo."""
+                    """Extrae JSON limpio de respuesta, manejando markdown."""
                     clean = response.strip()
 
-                    # Si está en markdown code block
+                    # Manejar bloques de código markdown
                     if clean.startswith('```json') and clean.endswith('```'):
-                        # Extraer contenido entre ```json y ```
                         clean = clean[7:-3].strip()
                     elif clean.startswith('```') and clean.endswith('```'):
-                        # Markdown genérico, extraer contenido
                         clean = clean[3:-3].strip()
 
                     return clean
@@ -247,11 +257,11 @@ class DeckGenerator:
 
                 strategies = parsed_json.get("estrategias", [])
 
-                # Validar que tenemos una lista de strings
+                # Validar estructura de respuesta
                 if not isinstance(strategies, list):
                     raise ValueError("El campo 'estrategias' no es una lista")
 
-                # Limpiar strings vacíos
+                # Limpiar estrategias vacías
                 strategies = [s.strip() for s in strategies if s and s.strip()]
                 logger.info(
                     f"Successfully parsed JSON with {len(strategies)} strategies")
@@ -260,7 +270,7 @@ class DeckGenerator:
                 logger.warning(
                     f"JSON parsing failed: {e}, falling back to line split")
                 logger.debug(f"Failed raw response: {raw_response}")
-                # Fallback al método anterior si JSON falla
+                # Fallback: dividir por líneas si JSON falla
                 strategies = [s.strip() for s in raw_response.split('\n') if
                               s.strip()]
 
@@ -272,7 +282,10 @@ class DeckGenerator:
             raise
 
     def _generate_deck_name(self, discipline: str, color: str) -> str:
-        """Genera un nombre evocativo para la baraja"""
+        """
+        Genera un nombre evocativo para la baraja.
+        Utiliza la disciplina y color como inspiración.
+        """
         logger.debug(
             f"Generating deck name for discipline='{discipline}', color='{color}'")
 
@@ -281,6 +294,7 @@ class DeckGenerator:
                 "discipline": discipline,
                 "color": color
             })
+            # Limpiar nombre generado de comillas o espacios extra
             name = result.content.strip().strip('"')
             logger.debug(f"Generated deck name: '{name}'")
             return name

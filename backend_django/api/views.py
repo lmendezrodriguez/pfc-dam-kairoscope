@@ -1,8 +1,11 @@
+"""
+Vistas de la API para gestión de barajas de estrategias oblicuas.
+Implementa endpoints RESTful con autenticación Firebase y generación IA.
+"""
 import json
 import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 from .firebase_config import initialize_firebase, verify_id_token
 from .models import UserProfile, Deck, Card
 from .core.deck_generator import DeckGenerator
@@ -15,7 +18,10 @@ initialize_firebase()
 
 
 def get_or_create_user_profile(firebase_uid):
-    """Obtiene o crea UserProfile por firebase_uid."""
+    """
+    Obtiene o crea UserProfile por firebase_uid.
+    Patrón Get-or-Create para vincular usuarios Firebase con la BD local.
+    """
     try:
         user_profile = UserProfile.objects.get(firebase_uid=firebase_uid)
         logger.debug(f"Found existing user profile: {firebase_uid}")
@@ -27,7 +33,10 @@ def get_or_create_user_profile(firebase_uid):
 
 @csrf_exempt
 def deck_handler(request):
-    """Maneja GET (listar) y POST (crear) para /api/deck/"""
+    """
+    Maneja GET (listar) y POST (crear) para /api/deck/
+    Dispatcher que delega según el método HTTP.
+    """
     if request.method == 'GET':
         return list_decks(request)
     elif request.method == 'POST':
@@ -37,10 +46,13 @@ def deck_handler(request):
 
 @csrf_exempt # Deshabilitar CSRF para pruebas locales
 def create_deck(request):
-    """Crea baraja de estrategias personalizadas con autenticación Firebase."""
+    """
+    Crea baraja de estrategias personalizadas con autenticación Firebase.
+    Proceso: validar token → verificar límites → generar con IA → persistir → responder.
+    """
     logger.info("Deck creation request received")
 
-    # Verificar que el vector store esté disponible
+    # Verificar que el vector store RAG esté disponible
     if ApiConfig.vector_store_retriever is None:
         logger.error("Vector store not loaded - service unavailable")
         return JsonResponse(
@@ -52,7 +64,7 @@ def create_deck(request):
         data = json.loads(request.body)
         logger.debug(f"Request data keys: {list(data.keys())}")
 
-        # Autenticación Firebase
+        # Autenticación Firebase mediante ID Token
         token = data.get('token')
         if not token:
             logger.warning("Request missing authentication token")
@@ -65,14 +77,14 @@ def create_deck(request):
 
         logger.info(f"Authenticated user: {firebase_uid}")
 
-        # Extraer parámetros de generación
+        # Extraer parámetros de generación del cliente Android
         discipline = data.get('discipline', 'Arte')
         block_description = data.get('blockDescription', 'Bloqueo general')
         chosen_color = data.get('color', '#000000')
 
         logger.debug(f"Generation params - discipline: {discipline}, color: {chosen_color}")
 
-        # Verificar límite de barajas antes de generar (optimización)
+        # Verificar límite de barajas por usuario antes de generar
         user_profile = get_or_create_user_profile(firebase_uid)
         current_deck_count = user_profile.decks.count()
 
@@ -82,7 +94,7 @@ def create_deck(request):
                 'error': 'Has alcanzado el límite de 8 barajas'
             }, status=400)
 
-        # Generar baraja usando LLM/RAG
+        # Generar baraja usando LLM/RAG con el vector store cargado
         logger.info("Starting deck generation with LLM")
         generator = DeckGenerator(retriever=ApiConfig.vector_store_retriever)
         generated_deck = generator.generate_deck(
@@ -93,7 +105,7 @@ def create_deck(request):
         )
         logger.info(f"Generated deck: {generated_deck['name']}")
 
-        # Persistir en base de datos
+        # Persistir baraja en base de datos
         deck = Deck.objects.create(
             user=user_profile,
             name=generated_deck['name'],
@@ -102,7 +114,7 @@ def create_deck(request):
             chosen_color=chosen_color
         )
 
-        # Crear cartas en batch (filtrar estrategias vacías)
+        # Crear cartas en lote, filtrando estrategias vacías
         cards = [
             Card(deck=deck, text=strategy_text)
             for strategy_text in generated_deck['strategies']
@@ -131,12 +143,15 @@ def create_deck(request):
 
 
 def list_decks(request):
-    """Lista las barajas del usuario autenticado."""
+    """
+    Lista las barajas del usuario autenticado.
+    Utiliza Authorization header con Bearer token.
+    """
     logger.info("Deck list request received")
     logger.debug(f"Headers received: {dict(request.headers)}")
 
     try:
-        # Autenticación Firebase
+        # Autenticación Firebase mediante Authorization header
         auth_header = request.headers.get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):
             logger.warning("Missing or invalid Authorization header")
@@ -150,13 +165,11 @@ def list_decks(request):
 
         logger.info(f"Listing decks for user: {firebase_uid}")
 
-        # Obtener user profile
+        # Obtener perfil de usuario y sus barajas
         user_profile = get_or_create_user_profile(firebase_uid)
-
-        # Obtener barajas del usuario
         decks = user_profile.decks.all()
 
-        # Serializar respuesta
+        # Serializar respuesta con datos resumidos de las barajas
         decks_data = [{
             'id': deck.id,
             'name': deck.name,
@@ -177,11 +190,12 @@ def list_decks(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-
-
 @csrf_exempt
 def deck_detail_handler(request, deck_id):
-    """Maneja GET (detalle) y DELETE para /api/deck/{deck_id}/"""
+    """
+    Maneja GET (detalle) y DELETE para /api/deck/{deck_id}/
+    Dispatcher que delega según el método HTTP.
+    """
     if request.method == 'GET':
         return get_deck_detail(request, deck_id)
     elif request.method == 'DELETE':
@@ -191,7 +205,10 @@ def deck_detail_handler(request, deck_id):
 
 
 def get_deck_detail(request, deck_id):
-    """Obtiene detalles completos de una baraja con sus cartas."""
+    """
+    Obtiene detalles completos de una baraja con sus cartas.
+    Incluye todas las estrategias para visualización y uso en la app.
+    """
     logger.info(f"Deck detail request for deck_id: {deck_id}")
 
     try:
@@ -209,20 +226,18 @@ def get_deck_detail(request, deck_id):
 
         logger.info(f"Getting deck detail for user: {firebase_uid}")
 
-        # Obtener user profile
+        # Verificar que el usuario sea propietario de la baraja
         user_profile = get_or_create_user_profile(firebase_uid)
-
-        # Obtener la baraja específica del usuario
         try:
             deck = user_profile.decks.get(id=deck_id)
         except Deck.DoesNotExist:
             logger.warning(f"Deck {deck_id} not found for user {firebase_uid}")
             return JsonResponse({'error': 'Baraja no encontrada'}, status=404)
 
-        # Obtener todas las cartas de la baraja
+        # Cargar todas las cartas de la baraja
         cards = deck.cards.all()
 
-        # Serializar respuesta
+        # Serializar respuesta completa con todas las cartas
         deck_data = {
             'id': deck.id,
             'name': deck.name,
@@ -245,7 +260,10 @@ def get_deck_detail(request, deck_id):
 
 
 def delete_deck(request, deck_id):
-    """Elimina una baraja del usuario autenticado."""
+    """
+    Elimina una baraja del usuario autenticado.
+    Las cartas se eliminan automáticamente por CASCADE.
+    """
     logger.info(f"Deck delete request for deck_id: {deck_id}")
 
     try:
@@ -263,17 +281,15 @@ def delete_deck(request, deck_id):
 
         logger.info(f"Deleting deck for user: {firebase_uid}")
 
-        # Obtener user profile
+        # Verificar propiedad y eliminar
         user_profile = get_or_create_user_profile(firebase_uid)
-
-        # Obtener la baraja específica del usuario
         try:
             deck = user_profile.decks.get(id=deck_id)
         except Deck.DoesNotExist:
             logger.warning(f"Deck {deck_id} not found for user {firebase_uid}")
             return JsonResponse({'error': 'Baraja no encontrada'}, status=404)
 
-        # Eliminar la baraja (las cartas se eliminan automáticamente por CASCADE)
+        # Eliminar baraja y sus cartas asociadas
         deck_name = deck.name
         deck.delete()
         logger.info(
