@@ -29,9 +29,8 @@ public class DeckCreationViewModel extends ViewModel {
     private final MutableLiveData<String> message = new MutableLiveData<>();
 
     // Crear un LiveData para indicar navegación exitosa
-    private final MutableLiveData<Boolean> shouldNavigateToList = new MutableLiveData<>();
-
-    public LiveData<Boolean> getShouldNavigateToList() { return shouldNavigateToList; }
+    private final MutableLiveData<Integer> shouldNavigateToDeck = new MutableLiveData<>();
+    public LiveData<Integer> getShouldNavigateToDeck() { return shouldNavigateToDeck; }
 
     // Constructor
     public DeckCreationViewModel(DeckRepository deckRepository) {
@@ -42,8 +41,7 @@ public class DeckCreationViewModel extends ViewModel {
             isLoading.postValue(false);
 
             if (result.isSuccess()) {
-                message.postValue("¡Baraja creada con éxito! Nombre: " + result.getDeck().getName());
-                shouldNavigateToList.postValue(true);
+                shouldNavigateToDeck.postValue(result.getDeck().getId());
             } else {
                 message.postValue("Error: " + result.getMessage());
             }

@@ -91,10 +91,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="textEmailAddress"
                     android:textColor="?attr/colorOnPrimary"
-                    android:textCursorDrawable="@null"
-                    android:textSelectHandle="@null"
-                    android:textSelectHandleLeft="@null"
-                    android:textSelectHandleRight="@null" />
+                    android:textCursorDrawable="@null"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Campo Password -->
@@ -121,10 +118,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
-                    android:textColor="?attr/colorOnPrimary" android:textCursorDrawable="@null"
-                    android:textSelectHandle="@null"
-                    android:textSelectHandleLeft="@null"
-                    android:textSelectHandleRight="@null" />
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textCursorDrawable="@null"
+                    />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Botón Login -->

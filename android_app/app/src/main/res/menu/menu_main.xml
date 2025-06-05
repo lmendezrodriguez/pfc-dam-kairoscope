@@ -8,12 +8,4 @@
         android:icon="@drawable/ic_brightness_6_24dp"
         android:title="@string/modo_nocturno"
         app:showAsAction="ifRoom" />
-
-    <!-- Acceso al perfil de usuario (pendiente de implementar) -->
-    <item
-        android:id="@+id/action_user_profile"
-        android:icon="@drawable/ic_account_circle_24dp"
-        android:title="@string/perfil"
-        app:showAsAction="ifRoom" />
-
 </menu>

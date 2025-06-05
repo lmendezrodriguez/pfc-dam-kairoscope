@@ -22,8 +22,10 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.lmr.kairoscope.R;
+import com.lmr.kairoscope.data.model.DeckListResponse;
 import com.lmr.kairoscope.data.repository.DeckRepository;
 import com.lmr.kairoscope.viewmodel.DeckCreationViewModel;
+import com.lmr.kairoscope.viewmodel.DeckListViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,8 @@ public class DeckCreationFragment extends Fragment {
 
     private static final String TAG = "DeckCreationFragment";
     private List<String> selectedTags = new ArrayList<>();
+    private DeckListViewModel deckListViewModel;
+    private boolean hasCheckedLimit = false;
 
     // UI Elements
     private TextInputEditText editTextDiscipline;
@@ -52,14 +56,20 @@ public class DeckCreationFragment extends Fragment {
 
     // Colores disponibles
     private final String[] colorOptions = {
-            "#e24939", "#f3e7cd", "#f8f2dc", "#5a6576", "#7fa87c",
+            "#e24939", "#f3e7cd", "#002fa7", "#5a6576", "#7fa87c",
             "#f4a73f", "#9b7fb8", "#4a9b8e", "#d66b7a", "#3c434f"
     };
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_deck_creation, container, false);
+        // Inicializar también el ViewModel de lista para verificar límite
+        DeckRepository deckRepository = new DeckRepository(requireContext());
+        deckListViewModel = new ViewModelProvider(requireActivity(), new DeckListViewModel.Factory(deckRepository))
+                .get(DeckListViewModel.class);
 
+// Cargar datos al entrar por primera vez
+        deckListViewModel.loadDeckList();
         // Obtener referencias a las vistas
         editTextDiscipline = view.findViewById(R.id.editTextDiscipline);
         chipGroupBlockTags = view.findViewById(R.id.chipGroupBlockTags);
@@ -85,6 +95,14 @@ public class DeckCreationFragment extends Fragment {
         setupBlockTagChips();
 
         buttonCreateDeck.setOnClickListener(v -> createDeck());
+        editTextDiscipline.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                checkDeckLimit();
+            }
+        });
+
+// También al hacer click
+        editTextDiscipline.setOnClickListener(v -> checkDeckLimit());
     }
 
     private void setupObservers() {
@@ -95,9 +113,11 @@ public class DeckCreationFragment extends Fragment {
             buttonCreateDeck.setEnabled(!isLoading);
         });
 
-        viewModel.getShouldNavigateToList().observe(getViewLifecycleOwner(), shouldNavigate -> {
-            if (shouldNavigate != null && shouldNavigate) {
-                navController.navigate(R.id.action_deckCreationFragment_to_deckListFragment);
+        viewModel.getShouldNavigateToDeck().observe(getViewLifecycleOwner(), deckId -> {
+            if (deckId != null) {
+                Bundle args = new Bundle();
+                args.putInt("deck_id", deckId);
+                navController.navigate(R.id.action_deckCreationFragment_to_deckDetailFragment, args);
             }
         });
 
@@ -194,7 +214,7 @@ public class DeckCreationFragment extends Fragment {
 
         if (isSelected) {
             // Agregar borde para indicar selección
-            drawable.setStroke(8, Color.parseColor("#31628D")); // Color primario, borde más grueso
+            drawable.setStroke(8, Color.parseColor("#1a1a2e")); // Color primario, borde más grueso
         }
 
         colorView.setBackground(drawable);
@@ -205,11 +225,13 @@ public class DeckCreationFragment extends Fragment {
 
         if (discipline.isEmpty()) {
             Snackbar.make(requireView(), "Por favor, ingresa una disciplina", Snackbar.LENGTH_SHORT).show();
+            viewModel.clearMessage();
             return;
         }
 
         if (selectedTags.size() > 5) {
             Snackbar.make(requireView(), "Máximo 5 tipos de bloqueo permitidos", Snackbar.LENGTH_SHORT).show();
+            viewModel.clearMessage();
             return;
         }
 
@@ -230,6 +252,7 @@ public class DeckCreationFragment extends Fragment {
                     if (selectedTags.size() >= 5) {
                         chip.setChecked(false);
                         Snackbar.make(requireView(), "Máximo 5 tipos de bloqueo", Snackbar.LENGTH_SHORT).show();
+                        viewModel.clearMessage();
                         return;
                     }
                     selectedTags.add(tag);
@@ -268,6 +291,29 @@ public class DeckCreationFragment extends Fragment {
 
         updateBlockDescription();
     }
+    private void checkDeckLimit() {
+        DeckListResponse response = deckListViewModel.getDeckListResult().getValue();
+        if (response != null && response.isSuccess() && response.getDecks() != null) {
+            if (response.getDecks().size() >= 8) {
+                // Deshabilitar todos los campos del formulario
+                editTextDiscipline.setEnabled(false);
+                chipGroupBlockTags.setEnabled(false);
+                gridLayoutColors.setEnabled(false);
+                buttonCreateDeck.setEnabled(false);
+
+                // Mostrar mensaje explicativo
+                Snackbar.make(requireView(),
+                        "Has alcanzado el límite de 8 barajas, borra una para poder generar una nueva",
+                        Snackbar.LENGTH_LONG).show();
+            } else {
+                // Asegurar que están habilitados
+                editTextDiscipline.setEnabled(true);
+                chipGroupBlockTags.setEnabled(true);
+                gridLayoutColors.setEnabled(true);
+                buttonCreateDeck.setEnabled(true);
+            }
+        }
+    }
 
     @Override
     public void onDestroyView() {
@@ -279,5 +325,6 @@ public class DeckCreationFragment extends Fragment {
         progressBar = null;
         selectedTags.clear();
         selectedColorView = null;
+        deckListViewModel = null;
     }
 }

@@ -14,14 +14,12 @@
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment" />
         <action
-            android:id="@+id/action_loginFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment"
+            android:id="@+id/action_loginFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
-        <action
-            android:id="@+id/action_loginFragment_to_deckCreationFragment"
-            app:destination="@id/deckCreationFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/registerFragment"
         android:name="com.lmr.kairoscope.view.fragment.RegisterFragment"
@@ -31,12 +29,29 @@
             android:id="@+id/action_registerFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
         <action
-            android:id="@+id/action_registerFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment"
+            android:id="@+id/action_registerFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
             app:popUpTo="@id/registerFragment"
             app:popUpToInclusive="true" />
     </fragment>
-
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.lmr.kairoscope.view.fragment.HomeFragment"
+        android:label="Inicio"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_homeFragment_to_deckListFragment"
+            app:destination="@id/deckListFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_deckCreationFragment"
+            app:destination="@id/deckCreationFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_deckDetailFragment"
+            app:destination="@id/deckDetailFragment" />
+    </fragment>
     <fragment
         android:id="@+id/deckListFragment"
         android:name="com.lmr.kairoscope.view.fragment.DeckListFragment"
@@ -59,10 +74,10 @@
         android:label="Crear Baraja"
         tools:layout="@layout/fragment_deck_creation">
         <action
-            android:id="@+id/action_deckCreationFragment_to_deckListFragment"
-            app:destination="@id/deckListFragment"
-            app:popUpTo="@id/deckListFragment"
-            app:popUpToInclusive="false" />
+            android:id="@+id/action_deckCreationFragment_to_deckDetailFragment"
+            app:destination="@id/deckDetailFragment"
+            app:popUpTo="@id/deckCreationFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -86,5 +101,19 @@
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>
+    <!-- Añadir acciones globales para bottom navigation -->
+    <action
+        android:id="@+id/action_global_deckListFragment"
+        app:destination="@id/deckListFragment"
+        app:popUpTo="@id/deckListFragment"
+        app:popUpToInclusive="true" />
+
+    <action
+        android:id="@+id/action_global_deckCreationFragment"
+        app:destination="@id/deckCreationFragment" />
+
+    <action
+        android:id="@+id/action_global_userProfileFragment"
+        app:destination="@id/userProfileFragment" />
 
 </navigation>

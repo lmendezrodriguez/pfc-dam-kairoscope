@@ -92,6 +92,7 @@
         <item name="titleTextAppearance">@style/TextAppearance.App.TitleLarge</item>
     </style>
 
+
     <!-- Base application theme. -->
     <style name="Base.Theme.KAIroscope" parent="AppTheme">
         <!-- Customize your light theme here. -->
