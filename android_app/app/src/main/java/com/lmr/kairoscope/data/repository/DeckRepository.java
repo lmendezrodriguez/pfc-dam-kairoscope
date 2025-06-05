@@ -256,4 +256,7 @@ public class DeckRepository {
                     }
                 });
     }
+    public void clearDeleteResult() {
+        deckDeleteResult.postValue(null);
+    }
 }
