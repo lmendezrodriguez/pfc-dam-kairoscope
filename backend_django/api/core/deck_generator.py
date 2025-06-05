@@ -95,6 +95,7 @@ class DeckGenerator:
         3. Declaración paradójica: "Los errores son invitaciones"
         4. Metáfora activa: "Piensa como agua", "Conviértete en observador"
         5. Opciones múltiples: "Añade -resta -nada"
+        6. Un solo sustantivo: "Silencio"
 
         **Por Aplicabilidad:**
         - 90% Universal: Aplicable a cualquier disciplina creativa (NO mencionar "{discipline}" directamente)
@@ -127,9 +128,10 @@ class DeckGenerator:
 
         # Prompt para generar nombres evocativos de barajas
         self.name_prompt = PromptTemplate.from_template(
-            """Genera un nombre corto en español (máximo 4 palabras), poético y evocativo para una baraja de estrategias creativas oblicuas inspirada por:
-    - Disciplina: {discipline}
-    - Color: {color}
+            """Genera un nombre corto en español (máximo 4 palabras) evocativo para una baraja de estrategias creativas oblicuas inspirada por:
+            - Disciplina: {discipline}
+            - Color: {color}
+            - No puedes nombrar directamente la disciplina (ni sinónimos) ni el color.
 
     Solo responde con el nombre, nada más. No incluyas explicaciones ni comillas."""
         )
