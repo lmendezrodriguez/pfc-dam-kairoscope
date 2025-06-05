@@ -125,7 +125,7 @@ public class LoginFragment extends Fragment {
                 // Usamos try-catch porque la navegación podría fallar si el fragmento ya no está en un estado válido.
                 try {
                     // *** IMPORTANTE: Asegúrate que R.id.action_loginFragment_to_deckListFragment es el ID correcto en tu nav_graph.xml ***
-                    navController.navigate(R.id.action_loginFragment_to_deckListFragment);
+                    navController.navigate(R.id.action_loginFragment_to_homeFragment);
                 } catch (IllegalArgumentException e) {
                     // Esto puede ocurrir si intentas navegar de nuevo rápidamente o si el fragmento ya no está activo/visible
                     Log.e(TAG, "Navigation error to DeckList: " + e.getMessage());

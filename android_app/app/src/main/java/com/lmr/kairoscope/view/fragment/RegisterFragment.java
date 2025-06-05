@@ -127,7 +127,7 @@ public class RegisterFragment extends Fragment {
                 // Navegar a la pantalla principal (DeckListFragment).
                 try {
                     // *** IMPORTANTE: Asegúrate que R.id.action_registerFragment_to_deckListFragment es el ID correcto en tu nav_graph.xml ***
-                    navController.navigate(R.id.action_registerFragment_to_deckListFragment);
+                    navController.navigate(R.id.action_registerFragment_to_homeFragment);
                 } catch (IllegalArgumentException e) {
                     Log.e(TAG, "Navigation error to DeckList after registration: " + e.getMessage());
                 }
