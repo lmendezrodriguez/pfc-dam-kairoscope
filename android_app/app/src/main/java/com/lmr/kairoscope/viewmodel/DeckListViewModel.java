@@ -46,7 +46,8 @@ public class DeckListViewModel extends ViewModel {
                 message.postValue(result.getMessage());
                 // Recargar lista después de eliminar
                 loadDeckList();
-            } else {
+                deckRepository.clearDeleteResult();
+            } else if (result != null) {
                 message.postValue("Error al eliminar la baraja");
             }
         });

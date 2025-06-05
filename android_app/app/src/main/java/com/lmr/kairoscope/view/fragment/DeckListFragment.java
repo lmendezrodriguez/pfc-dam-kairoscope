@@ -33,7 +33,6 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
     // UI Elements
     private RecyclerView recyclerViewDecks;
     private LinearLayout layoutEmptyState;
-    private FloatingActionButton fabCreateDeck;
     private CircularProgressIndicator progressBar;
 
     // ViewModel y Adapter
@@ -50,7 +49,6 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
         // Obtener referencias UI
         recyclerViewDecks = view.findViewById(R.id.recyclerViewDecks);
         layoutEmptyState = view.findViewById(R.id.layoutEmptyState);
-        fabCreateDeck = view.findViewById(R.id.fabCreateDeck);
         progressBar = view.findViewById(R.id.progressBar);
 
         return view;
@@ -65,7 +63,7 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
 
         // Inicializar ViewModel
         DeckRepository repository = new DeckRepository(requireContext());
-        viewModel = new ViewModelProvider(this, new DeckListViewModel.Factory(repository))
+        viewModel = new ViewModelProvider(requireActivity(), new DeckListViewModel.Factory(repository))
                 .get(DeckListViewModel.class);
 
         // Configurar RecyclerView y Adapter
@@ -74,8 +72,6 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
         // Configurar observadores
         setupObservers();
 
-        // Configurar listeners
-        setupListeners();
 
         // Cargar datos inicial
         viewModel.loadDeckList();
@@ -125,23 +121,7 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
         viewModel.getDeckDeleteResult().observe(getViewLifecycleOwner(), result -> {
             if (result != null && result.isSuccess()) {
                 Snackbar.make(requireView(), result.getMessage(), Snackbar.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void setupListeners() {
-        // FAB para crear nueva baraja
-        fabCreateDeck.setOnClickListener(v -> {
-            if (viewModel.canCreateNewDeck()) {
-                try {
-                    navController.navigate(R.id.action_deckListFragment_to_deckCreationFragment);
-                } catch (Exception e) {
-                    Log.e(TAG, "Navigation error to DeckCreation: " + e.getMessage());
-                }
-            } else {
-                Snackbar.make(requireView(),
-                        "Has alcanzado el límite de 8 barajas, borra una para poder generar una nueva",
-                        Snackbar.LENGTH_LONG).show();
+                viewModel.clearMessage();
             }
         });
     }
@@ -156,6 +136,7 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
         } catch (Exception e) {
             Log.e(TAG, "Navigation error to DeckDetail: " + e.getMessage());
             Snackbar.make(requireView(), "Error al abrir la baraja", Snackbar.LENGTH_SHORT).show();
+            viewModel.clearMessage();
         }
     }
 
@@ -179,7 +160,6 @@ public class DeckListFragment extends Fragment implements DeckListAdapter.OnDeck
         // Limpiar referencias
         recyclerViewDecks = null;
         layoutEmptyState = null;
-        fabCreateDeck = null;
         progressBar = null;
         adapter = null;
     }
