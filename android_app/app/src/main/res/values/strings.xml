@@ -20,17 +20,16 @@
     <string name="registrarse">Registrarse</string>
     <string name="ya_tengo_una_cuenta_iniciar_sesi_n">Ya tengo una cuenta. Iniciar sesión</string>
     <string-array name="creative_block_tags">
-        <item>No saber por dónde empezar</item>
+        <item>No sabes por dónde empezar</item>
         <item>Falta de inspiración</item>
         <item>Perfeccionismo</item>
         <item>Procrastinación</item>
         <item>Bloqueo técnico</item>
-        <item>No saber por dónde seguir</item>
-        <item>Saturación de estímulos</item>
+        <item>No sabes por dónde seguir</item>
         <item>Rutina</item>
+        <item>Saturación de estímulos</item>
         <item>Presión de tiempo</item>
         <item>Falta de confianza</item>
-        <item>Falta de estructura</item>
-        <item>No saber cómo terminar</item>
+        <item>No sabes cómo terminar</item>
     </string-array>
 </resources>

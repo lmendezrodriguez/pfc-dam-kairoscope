@@ -175,6 +175,7 @@ public class UserProfileFragment extends Fragment {
             if (newPassword.length() < 6) {
                 Snackbar.make(requireView(), "La contraseña debe tener al menos 6 caracteres",
                         Snackbar.LENGTH_SHORT).show();
+                viewModel.clearMessage();
                 return;
             }
             viewModel.updatePassword(currentPassword, newPassword, confirmPassword);

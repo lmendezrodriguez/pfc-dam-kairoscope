@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
+    android:paddingTop="10dp"
     tools:context=".view.fragment.UserProfileFragment">
 
     <!-- Texto Welcome arriba -->
@@ -61,7 +61,6 @@
                     app:cardBackgroundColor="?attr/colorSurface"
                     app:cardCornerRadius="40dp"
                     app:cardElevation="4dp"
-                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
@@ -80,14 +79,14 @@
                     android:id="@+id/textViewUserName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="10dp"
                     android:gravity="center"
                     android:textAppearance="?attr/textAppearanceTitleLarge"
                     android:textColor="?attr/colorOnPrimary"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardAvatar"
+                    app:layout_constraintStart_toEndOf="@+id/cardAvatar"
+                    app:layout_constraintTop_toTopOf="parent"
                     tools:text="Nombre Usuario" />
 
                 <TextView
@@ -100,7 +99,7 @@
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     android:textColor="?attr/colorOnPrimary"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/cardAvatar"
                     app:layout_constraintTop_toBottomOf="@+id/textViewUserName"
                     tools:text="email@ejemplo.com" />
 
@@ -179,10 +178,7 @@
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
                         android:textColor="?attr/colorOnPrimary"
-                        android:textCursorDrawable="@null"
-                        android:textSelectHandle="@null"
-                        android:textSelectHandleLeft="@null"
-                        android:textSelectHandleRight="@null" />
+                        android:textCursorDrawable="@null"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Nueva Contraseña -->
@@ -210,10 +206,7 @@
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
                         android:textColor="?attr/colorOnPrimary"
-                        android:textCursorDrawable="@null"
-                        android:textSelectHandle="@null"
-                        android:textSelectHandleLeft="@null"
-                        android:textSelectHandleRight="@null" />
+                        android:textCursorDrawable="@null"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Confirmar Contraseña -->
@@ -241,10 +234,7 @@
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
                         android:textColor="?attr/colorOnPrimary"
-                        android:textCursorDrawable="@null"
-                        android:textSelectHandle="@null"
-                        android:textSelectHandleLeft="@null"
-                        android:textSelectHandleRight="@null" />
+                        android:textCursorDrawable="@null" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Botón Guardar Cambios -->

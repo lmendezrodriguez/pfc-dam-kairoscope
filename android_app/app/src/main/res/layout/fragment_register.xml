@@ -91,10 +91,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="textPersonName|textCapWords"
                     android:textColor="?attr/colorOnPrimary"
-                    android:textCursorDrawable="@null"
-                    android:textSelectHandle="@null"
-                    android:textSelectHandleLeft="@null"
-                    android:textSelectHandleRight="@null" />
+                    android:textCursorDrawable="@null" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Campo Email -->
@@ -120,10 +117,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="textEmailAddress"
                     android:textColor="?attr/colorOnPrimary"
-                    android:textCursorDrawable="@null"
-                    android:textSelectHandle="@null"
-                    android:textSelectHandleLeft="@null"
-                    android:textSelectHandleRight="@null" />
+                    android:textCursorDrawable="@null"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Campo Password -->
@@ -151,10 +145,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
                     android:textColor="?attr/colorOnPrimary"
-                    android:textCursorDrawable="@null"
-                    android:textSelectHandle="@null"
-                    android:textSelectHandleLeft="@null"
-                    android:textSelectHandleRight="@null" />
+                    android:textCursorDrawable="@null"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Campo Repetir Password -->
@@ -182,10 +173,7 @@
                     android:layout_height="wrap_content"
                     android:inputType="textPassword"
                     android:textColor="?attr/colorOnPrimary"
-                    android:textCursorDrawable="@null"
-                    android:textSelectHandle="@null"
-                    android:textSelectHandleLeft="@null"
-                    android:textSelectHandleRight="@null" />
+                    android:textCursorDrawable="@null"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Botón Register -->

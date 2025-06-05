@@ -30,7 +30,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="40dp">
+                android:padding="25dp">
 
                 <!-- Título de la baraja -->
                 <TextView
