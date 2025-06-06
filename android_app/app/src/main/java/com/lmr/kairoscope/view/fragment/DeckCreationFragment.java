@@ -21,6 +21,7 @@ import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+
 import com.lmr.kairoscope.R;
 import com.lmr.kairoscope.data.model.DeckListResponse;
 import com.lmr.kairoscope.data.repository.DeckRepository;
@@ -30,12 +31,15 @@ import com.lmr.kairoscope.viewmodel.DeckListViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragmento para crear nuevas barajas de estrategias personalizadas.
+ * Permite seleccionar disciplina, tipos de bloqueo y color temático.
+ */
 public class DeckCreationFragment extends Fragment {
 
     private static final String TAG = "DeckCreationFragment";
     private List<String> selectedTags = new ArrayList<>();
     private DeckListViewModel deckListViewModel;
-    private boolean hasCheckedLimit = false;
 
     // UI Elements
     private TextInputEditText editTextDiscipline;
@@ -44,17 +48,15 @@ public class DeckCreationFragment extends Fragment {
     private View buttonCreateDeck;
     private CircularProgressIndicator progressBar;
 
-    // ViewModel
+    // ViewModel y navegación
     private DeckCreationViewModel viewModel;
-
-    // NavController
     private NavController navController;
 
-    // Color seleccionado
+    // Gestión de selección de color
     private String selectedColor = "#e24939";
     private View selectedColorView = null;
 
-    // Colores disponibles
+    // Paleta de colores disponibles
     private final String[] colorOptions = {
             "#e24939", "#f3e7cd", "#002fa7", "#5a6576", "#7fa87c",
             "#f4a73f", "#9b7fb8", "#4a9b8e", "#d66b7a", "#3c434f"
@@ -63,14 +65,15 @@ public class DeckCreationFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_deck_creation, container, false);
-        // Inicializar también el ViewModel de lista para verificar límite
+
+        // Inicializar ViewModel para verificar límite de barajas
         DeckRepository deckRepository = new DeckRepository(requireContext());
         deckListViewModel = new ViewModelProvider(requireActivity(), new DeckListViewModel.Factory(deckRepository))
                 .get(DeckListViewModel.class);
 
-// Cargar datos al entrar por primera vez
         deckListViewModel.loadDeckList();
-        // Obtener referencias a las vistas
+
+        // Obtener referencias UI
         editTextDiscipline = view.findViewById(R.id.editTextDiscipline);
         chipGroupBlockTags = view.findViewById(R.id.chipGroupBlockTags);
         gridLayoutColors = view.findViewById(R.id.gridLayoutColors);
@@ -86,6 +89,7 @@ public class DeckCreationFragment extends Fragment {
 
         navController = NavHostFragment.findNavController(this);
 
+        // Inicializar ViewModel de creación
         DeckRepository repository = new DeckRepository(requireContext());
         viewModel = new ViewModelProvider(this, new DeckCreationViewModel.Factory(repository))
                 .get(DeckCreationViewModel.class);
@@ -94,25 +98,27 @@ public class DeckCreationFragment extends Fragment {
         setupColorCircles();
         setupBlockTagChips();
 
+        // Configurar listeners
         buttonCreateDeck.setOnClickListener(v -> createDeck());
         editTextDiscipline.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
                 checkDeckLimit();
             }
         });
-
-// También al hacer click
         editTextDiscipline.setOnClickListener(v -> checkDeckLimit());
     }
 
+    /**
+     * Configura los observadores LiveData del ViewModel.
+     */
     private void setupObservers() {
+        // Estado de carga
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            editTextDiscipline.setEnabled(!isLoading);
-            gridLayoutColors.setEnabled(!isLoading);
-            buttonCreateDeck.setEnabled(!isLoading);
+            setFormEnabled(!isLoading);
         });
 
+        // Navegación después de crear baraja
         viewModel.getShouldNavigateToDeck().observe(getViewLifecycleOwner(), deckId -> {
             if (deckId != null) {
                 Bundle args = new Bundle();
@@ -121,6 +127,7 @@ public class DeckCreationFragment extends Fragment {
             }
         });
 
+        // Mensajes de estado
         viewModel.getMessage().observe(getViewLifecycleOwner(), message -> {
             if (message != null && !message.isEmpty()) {
                 Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show();
@@ -128,6 +135,7 @@ public class DeckCreationFragment extends Fragment {
             }
         });
 
+        // Resultado de creación de baraja
         viewModel.getDeckCreationResult().observe(getViewLifecycleOwner(), result -> {
             if (result != null && result.isSuccess()) {
                 Toast.makeText(requireContext(),
@@ -138,53 +146,62 @@ public class DeckCreationFragment extends Fragment {
         });
     }
 
+    /**
+     * Crea dinámicamente los círculos de colores para selección.
+     */
     private void setupColorCircles() {
-        int circleSize = (int) (40 * getResources().getDisplayMetrics().density); // 40dp en px
-        int margin = (int) (12 * getResources().getDisplayMetrics().density); // 12dp en px
+        int circleSize = (int) (40 * getResources().getDisplayMetrics().density);
+        int margin = (int) (12 * getResources().getDisplayMetrics().density);
 
         for (int i = 0; i < colorOptions.length; i++) {
-            View colorCircle = new View(requireContext());
-
-            // Configurar parámetros para GridLayout
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-            params.width = circleSize;
-            params.height = circleSize;
-            params.setMargins(margin, margin, margin, margin);
-            colorCircle.setLayoutParams(params);
-
-            // Crear drawable circular
-            GradientDrawable drawable = new GradientDrawable();
-            drawable.setShape(GradientDrawable.OVAL);
-            try {
-                drawable.setColor(Color.parseColor(colorOptions[i]));
-            } catch (Exception e) {
-                drawable.setColor(Color.GRAY);
-            }
-
-            colorCircle.setBackground(drawable);
-
-            final String color = colorOptions[i];
-
-            colorCircle.setOnClickListener(v -> {
-                selectColor(colorCircle, color);
-            });
-
+            View colorCircle = createColorCircle(circleSize, margin, colorOptions[i]);
             gridLayoutColors.addView(colorCircle);
 
-            // Seleccionar el primer color por defecto
+            // Seleccionar primer color por defecto
             if (i == 0) {
-                selectColor(colorCircle, color);
+                selectColor(colorCircle, colorOptions[i]);
             }
         }
     }
 
+    /**
+     * Crea un círculo de color individual.
+     */
+    private View createColorCircle(int size, int margin, String color) {
+        View colorCircle = new View(requireContext());
+
+        // Configurar layout
+        GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+        params.width = size;
+        params.height = size;
+        params.setMargins(margin, margin, margin, margin);
+        colorCircle.setLayoutParams(params);
+
+        // Crear drawable circular
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.OVAL);
+        try {
+            drawable.setColor(Color.parseColor(color));
+        } catch (Exception e) {
+            drawable.setColor(Color.GRAY);
+        }
+
+        colorCircle.setBackground(drawable);
+        colorCircle.setOnClickListener(v -> selectColor(colorCircle, color));
+
+        return colorCircle;
+    }
+
+    /**
+     * Selecciona un color y actualiza la UI.
+     */
     private void selectColor(View colorView, String color) {
-        // Deseleccionar el anterior
+        // Deseleccionar anterior
         if (selectedColorView != null) {
             updateCircleSelection(selectedColorView, false);
         }
 
-        // Seleccionar el nuevo
+        // Seleccionar nuevo
         selectedColorView = colorView;
         selectedColor = color;
         updateCircleSelection(colorView, true);
@@ -192,14 +209,16 @@ public class DeckCreationFragment extends Fragment {
         viewModel.setSelectedColor(selectedColor);
     }
 
+    /**
+     * Actualiza la apariencia visual del círculo de color (seleccionado/no seleccionado).
+     */
     private void updateCircleSelection(View colorView, boolean isSelected) {
         GradientDrawable drawable = new GradientDrawable();
         drawable.setShape(GradientDrawable.OVAL);
 
-        // Obtener el color de fondo
+        // Determinar color de fondo
         String color = selectedColor;
         if (!isSelected) {
-            // Encontrar el color de esta vista
             int index = gridLayoutColors.indexOfChild(colorView);
             if (index >= 0 && index < colorOptions.length) {
                 color = colorOptions[index];
@@ -212,26 +231,27 @@ public class DeckCreationFragment extends Fragment {
             drawable.setColor(Color.GRAY);
         }
 
+        // Añadir borde si está seleccionado
         if (isSelected) {
-            // Agregar borde para indicar selección
-            drawable.setStroke(8, Color.parseColor("#1a1a2e")); // Color primario, borde más grueso
+            drawable.setStroke(8, Color.parseColor("#1a1a2e"));
         }
 
         colorView.setBackground(drawable);
     }
 
+    /**
+     * Valida datos y crea una nueva baraja.
+     */
     private void createDeck() {
         String discipline = editTextDiscipline.getText().toString().trim();
 
         if (discipline.isEmpty()) {
             Snackbar.make(requireView(), "Por favor, ingresa una disciplina", Snackbar.LENGTH_SHORT).show();
-            viewModel.clearMessage();
             return;
         }
 
         if (selectedTags.size() > 5) {
             Snackbar.make(requireView(), "Máximo 5 tipos de bloqueo permitidos", Snackbar.LENGTH_SHORT).show();
-            viewModel.clearMessage();
             return;
         }
 
@@ -240,6 +260,9 @@ public class DeckCreationFragment extends Fragment {
         viewModel.createDeck();
     }
 
+    /**
+     * Configura los chips para seleccionar tipos de bloqueo creativo.
+     */
     private void setupBlockTagChips() {
         String[] tagArray = getResources().getStringArray(R.array.creative_block_tags);
 
@@ -252,7 +275,6 @@ public class DeckCreationFragment extends Fragment {
                     if (selectedTags.size() >= 5) {
                         chip.setChecked(false);
                         Snackbar.make(requireView(), "Máximo 5 tipos de bloqueo", Snackbar.LENGTH_SHORT).show();
-                        viewModel.clearMessage();
                         return;
                     }
                     selectedTags.add(tag);
@@ -265,6 +287,9 @@ public class DeckCreationFragment extends Fragment {
         }
     }
 
+    /**
+     * Actualiza la descripción del bloqueo basada en chips seleccionados.
+     */
     private void updateBlockDescription() {
         String description = selectedTags.isEmpty() ?
                 "Bloqueo creativo general" :
@@ -273,10 +298,13 @@ public class DeckCreationFragment extends Fragment {
         viewModel.setBlockDescription(description);
     }
 
+    /**
+     * Limpia todos los campos del formulario.
+     */
     private void clearFields() {
         editTextDiscipline.setText("");
 
-        // Limpiar chips de bloqueo seleccionados
+        // Limpiar chips seleccionados
         for (int i = 0; i < chipGroupBlockTags.getChildCount(); i++) {
             Chip chip = (Chip) chipGroupBlockTags.getChildAt(i);
             chip.setChecked(false);
@@ -291,33 +319,38 @@ public class DeckCreationFragment extends Fragment {
 
         updateBlockDescription();
     }
+
+    /**
+     * Verifica si el usuario ha alcanzado el límite de 8 barajas.
+     */
     private void checkDeckLimit() {
         DeckListResponse response = deckListViewModel.getDeckListResult().getValue();
         if (response != null && response.isSuccess() && response.getDecks() != null) {
             if (response.getDecks().size() >= 8) {
-                // Deshabilitar todos los campos del formulario
-                editTextDiscipline.setEnabled(false);
-                chipGroupBlockTags.setEnabled(false);
-                gridLayoutColors.setEnabled(false);
-                buttonCreateDeck.setEnabled(false);
-
-                // Mostrar mensaje explicativo
+                setFormEnabled(false);
                 Snackbar.make(requireView(),
                         "Has alcanzado el límite de 8 barajas, borra una para poder generar una nueva",
                         Snackbar.LENGTH_LONG).show();
             } else {
-                // Asegurar que están habilitados
-                editTextDiscipline.setEnabled(true);
-                chipGroupBlockTags.setEnabled(true);
-                gridLayoutColors.setEnabled(true);
-                buttonCreateDeck.setEnabled(true);
+                setFormEnabled(true);
             }
         }
+    }
+
+    /**
+     * Habilita o deshabilita todos los elementos del formulario.
+     */
+    private void setFormEnabled(boolean enabled) {
+        editTextDiscipline.setEnabled(enabled);
+        chipGroupBlockTags.setEnabled(enabled);
+        gridLayoutColors.setEnabled(enabled);
+        buttonCreateDeck.setEnabled(enabled);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        // Limpiar referencias para evitar memory leaks
         editTextDiscipline = null;
         chipGroupBlockTags = null;
         gridLayoutColors = null;

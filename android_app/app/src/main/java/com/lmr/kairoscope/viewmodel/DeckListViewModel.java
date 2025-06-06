@@ -11,41 +11,40 @@ import com.lmr.kairoscope.data.model.DeckListResponse;
 import com.lmr.kairoscope.data.repository.DeckRepository;
 
 /**
- * ViewModel for managing deck list data and UI state.
- * Handles loading state and communication with DeckRepository.
+ * ViewModel que gestiona la lista de barajas del usuario.
+ * Coordina carga, eliminación y validación de límites de barajas.
  */
 public class DeckListViewModel extends ViewModel {
 
     private final DeckRepository deckRepository;
 
-    // Estado de carga
+    // Estados de la UI
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
-
-    // Mensajes para la UI
     private final MutableLiveData<String> message = new MutableLiveData<>();
 
+    /**
+     * Constructor que inicializa el ViewModel con el Repository.
+     * Configura observadores para procesar respuestas de lista y eliminación.
+     */
     public DeckListViewModel(DeckRepository deckRepository) {
         this.deckRepository = deckRepository;
 
-        // Observar resultado de la lista de barajas
+        // Observar resultado de carga de lista
         this.deckRepository.getDeckListResult().observeForever(result -> {
             isLoading.postValue(false);
 
-            if (result != null) {
-                if (result.isSuccess()) {
-                } else {
-                    message.postValue("Error al cargar las barajas. Comprueba tu conexión");
-                }
+            if (result != null && !result.isSuccess()) {
+                message.postValue("Error al cargar las barajas. Comprueba tu conexión");
             }
         });
 
+        // Observar resultado de eliminación y recargar lista si es exitosa
         this.deckRepository.getDeckDeleteResult().observeForever(result -> {
             isLoading.postValue(false);
 
             if (result != null && result.isSuccess()) {
                 message.postValue(result.getMessage());
-                // Recargar lista después de eliminar
-                loadDeckList();
+                loadDeckList(); // Recargar lista tras eliminación exitosa
                 deckRepository.clearDeleteResult();
             } else if (result != null) {
                 message.postValue("Error al eliminar la baraja");
@@ -66,37 +65,49 @@ public class DeckListViewModel extends ViewModel {
         return deckRepository.getDeckListResult();
     }
 
-    // Getter para el resultado de delete
     public LiveData<DeckDeleteResponse> getDeckDeleteResult() {
         return deckRepository.getDeckDeleteResult();
     }
 
-    // Método para cargar la lista de barajas
+    /**
+     * Carga la lista actualizada de barajas desde el servidor.
+     */
     public void loadDeckList() {
         isLoading.setValue(true);
         deckRepository.getDeckList();
     }
 
-    // Método para limpiar mensajes
+    /**
+     * Limpia el mensaje actual para evitar que se muestre nuevamente.
+     */
     public void clearMessage() {
         message.setValue(null);
     }
 
-    // Método para eliminar una baraja
+    /**
+     * Elimina una baraja específica del usuario.
+     */
     public void deleteDeck(int deckId) {
         isLoading.setValue(true);
         deckRepository.deleteDeck(deckId);
     }
+
+    /**
+     * Verifica si el usuario puede crear una nueva baraja (límite de 8).
+     * @return true si puede crear más barajas, false si alcanzó el límite
+     */
     public boolean canCreateNewDeck() {
         DeckListResponse currentResponse = getDeckListResult().getValue();
         if (currentResponse != null && currentResponse.isSuccess() &&
                 currentResponse.getDecks() != null) {
             return currentResponse.getDecks().size() < 8;
         }
-        return true; // Si no hay datos, permitir intento
+        return true; // Permitir intento si no hay datos cargados
     }
 
-    // Factory para crear el ViewModel
+    /**
+     * Factory para crear instancias del ViewModel con dependencias.
+     */
     public static class Factory extends ViewModelProvider.NewInstanceFactory {
         private final DeckRepository repository;
 

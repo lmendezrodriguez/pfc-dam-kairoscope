@@ -7,7 +7,6 @@
     android:paddingTop="10dp"
     tools:context=".view.fragment.UserProfileFragment">
 
-    <!-- Texto Welcome arriba -->
     <TextView
         android:id="@+id/textViewWelcome"
         android:layout_width="0dp"
@@ -24,7 +23,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="60dp"
-        android:text="Gestiona tu cuenta y preferencias"
+        android:text="@string/gestiona_tu_cuenta_y_preferencias"
         android:textAppearance="?attr/textAppearanceBodyMedium"
         android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintBottom_toTopOf="@+id/cardProfile"
@@ -69,7 +68,7 @@
                         android:layout_width="64dp"
                         android:layout_height="64dp"
                         android:layout_gravity="center"
-                        android:contentDescription="Avatar"
+                        android:contentDescription="@string/avatar"
                         android:src="@drawable/ic_account_circle_24dp"
                         app:tint="?attr/colorPrimary" />
                 </androidx.cardview.widget.CardView>
@@ -110,7 +109,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
-                    android:hint="Nombre completo"
+                    android:hint="@string/nombre_completo"
                     android:textColorHint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
@@ -135,7 +134,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:hint="Correo electrónico"
+                    android:hint="@string/correo_electr_nico"
                     android:textColorHint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
@@ -160,7 +159,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:hint="Contraseña actual"
+                    android:hint="@string/contrase_a_actual"
                     android:textColorHint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
@@ -188,7 +187,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:hint="Nueva contraseña"
+                    android:hint="@string/nueva_contrase_a"
                     android:textColorHint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
@@ -216,7 +215,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:hint="Confirmar nueva contraseña"
+                    android:hint="@string/confirmar_nueva_contrase_a"
                     android:textColorHint="?attr/colorOnPrimary"
                     app:boxStrokeColor="?attr/colorOnPrimary"
                     app:hintTextColor="?attr/colorOnPrimary"
@@ -244,7 +243,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
                     android:backgroundTint="?attr/colorSurface"
-                    android:text="Guardar Cambios"
+                    android:text="@string/guardar_cambios"
                     android:textColor="?attr/colorPrimary"
 
                     app:layout_constraintEnd_toEndOf="parent"
@@ -259,7 +258,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:backgroundTint="@color/md_theme_error"
-                    android:text="Cerrar Sesión"
+                    android:text="@string/cerrar_sesi_n"
                     android:textColor="?attr/colorOnPrimary"
 
                     app:layout_constraintEnd_toEndOf="parent"

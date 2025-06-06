@@ -21,6 +21,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * Repositorio responsable de gestionar las operaciones relacionadas con las barajas.
+ */
 public class DeckRepository {
 
     private final ApiService apiService;
@@ -48,9 +51,13 @@ public class DeckRepository {
         return deckListResult;
     }
 
-    public LiveData<DeckDetailResponse> getDeckDetailResult() { return deckDetailResult; }
+    public LiveData<DeckDetailResponse> getDeckDetailResult() {
+        return deckDetailResult;
+    }
 
-    public LiveData<DeckDeleteResponse> getDeckDeleteResult() { return deckDeleteResult; }
+    public LiveData<DeckDeleteResponse> getDeckDeleteResult() {
+        return deckDeleteResult;
+    }
 
 
     // Método para crear una baraja
@@ -115,7 +122,7 @@ public class DeckRepository {
                 });
     }
 
-    // NUEVO: Método para obtener lista de barajas
+    // Método para obtener lista de barajas
     public void getDeckList() {
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
 
@@ -161,6 +168,7 @@ public class DeckRepository {
                 });
     }
 
+    // Método para obtener detalles de una baraja
     public void getDeckDetail(int deckId) {
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
 
@@ -209,6 +217,7 @@ public class DeckRepository {
                 });
     }
 
+    // Método para eliminar una baraja
     public void deleteDeck(int deckId) {
         FirebaseUser currentUser = firebaseAuth.getCurrentUser();
 
@@ -256,6 +265,7 @@ public class DeckRepository {
                     }
                 });
     }
+
     public void clearDeleteResult() {
         deckDeleteResult.postValue(null);
     }

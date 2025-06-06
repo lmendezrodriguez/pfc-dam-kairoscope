@@ -13,7 +13,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:text="¡Únete a kAIroscope!"
+        android:text="@string/nete_a_kairoscope"
         android:textAppearance="?attr/textAppearanceHeadlineMedium"
         android:textColor="?attr/colorOnBackground"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,7 +24,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:text="Desbloquea tu imaginación"
+        android:text="@string/desbloquea_tu_imaginaci_n"
         android:textAppearance="?attr/textAppearanceBodyMedium"
         android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintStart_toStartOf="@+id/textViewWelcome"
@@ -64,7 +64,7 @@
                     android:layout_width="64dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:contentDescription="Logo"
+                    android:contentDescription="@string/logo"
                     android:src="@mipmap/ic_launcher_kai_w" />
             </androidx.cardview.widget.CardView>
 
@@ -127,7 +127,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Contraseña"
+                android:hint="@string/contrase_a"
                 android:textColorHint="?attr/colorOnPrimary"
                 app:hintTextColor="?attr/colorOnPrimary"
                 app:startIconDrawable="@android:drawable/ic_lock_lock"

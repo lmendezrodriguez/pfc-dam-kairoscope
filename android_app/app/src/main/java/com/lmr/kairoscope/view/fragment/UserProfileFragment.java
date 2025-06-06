@@ -1,4 +1,3 @@
-// view/fragment/UserProfileFragment.java
 package com.lmr.kairoscope.view.fragment;
 
 import android.os.Bundle;
@@ -23,6 +22,12 @@ import com.lmr.kairoscope.R;
 import com.lmr.kairoscope.data.repository.AuthRepository;
 import com.lmr.kairoscope.viewmodel.UserProfileViewModel;
 
+import java.util.Objects;
+
+/**
+ * Fragment para gestionar el perfil del usuario.
+ * Permite editar nombre, cambiar contraseña y cerrar sesión.
+ */
 public class UserProfileFragment extends Fragment {
 
     private static final String TAG = "UserProfileFragment";
@@ -38,10 +43,8 @@ public class UserProfileFragment extends Fragment {
     private MaterialButton buttonSaveChanges;
     private MaterialButton buttonLogout;
 
-    // ViewModel
+    // ViewModel y navegación
     private UserProfileViewModel viewModel;
-
-    // Navigation
     private NavController navController;
 
     @Override
@@ -59,6 +62,9 @@ public class UserProfileFragment extends Fragment {
         setupListeners();
     }
 
+    /**
+     * Inicializa las referencias a los elementos de la UI.
+     */
     private void initViews(View view) {
         textViewUserName = view.findViewById(R.id.textViewUserName);
         textViewUserEmail = view.findViewById(R.id.textViewUserEmail);
@@ -73,66 +79,67 @@ public class UserProfileFragment extends Fragment {
         navController = NavHostFragment.findNavController(this);
     }
 
+    /**
+     * Configura el ViewModel con sus dependencias.
+     */
     private void setupViewModel() {
         AuthRepository authRepository = new AuthRepository(requireContext());
         viewModel = new ViewModelProvider(this, new UserProfileViewModel.Factory(authRepository))
                 .get(UserProfileViewModel.class);
     }
 
+    /**
+     * Configura los observadores para actualizar la UI según los cambios del ViewModel.
+     */
     private void setupObservers() {
-        // Observar perfil del usuario
+        // Observar perfil del usuario y poblar campos
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         viewModel.getCurrentUserProfile().observe(getViewLifecycleOwner(), userProfile -> {
             if (userProfile != null) {
+                // Mostrar información actual
                 textViewUserName.setText(userProfile.getDisplayName() != null ?
                         userProfile.getDisplayName() : "Usuario");
                 textViewUserEmail.setText(userProfile.getEmail() != null ?
                         userProfile.getEmail() : "email@ejemplo.com");
 
-                // Llenar campos editables
+                // Poblar campos editables
                 if (editTextName != null) {
                     editTextName.setText(userProfile.getDisplayName());
                 }
-
                 if (editTextEmail != null) {
                     editTextEmail.setText(userProfile.getEmail());
                 }
             }
         });
 
-        // Observar estado de autenticación
+        // Observar estado de autenticación para navegación post-logout
         viewModel.isAuthenticated().observe(getViewLifecycleOwner(), isAuthenticated -> {
             if (isAuthenticated != null && !isAuthenticated) {
-                // Usuario deslogueado, navegar a login
                 try {
                     navController.navigate(R.id.action_userProfileFragment_to_loginFragment);
                 } catch (Exception e) {
-                    // Manejo de error de navegación
+                    // Silenciar error de navegación si el fragment ya no está activo
                 }
             }
         });
 
-        // Observar estados de carga
+        // Observar estados de carga para feedback visual
         viewModel.getIsUpdatingProfile().observe(getViewLifecycleOwner(), isUpdating -> {
             buttonSaveChanges.setEnabled(!isUpdating);
-            if (isUpdating) {
-                buttonSaveChanges.setText("Guardando...");
-            } else {
-                buttonSaveChanges.setText("Guardar Cambios");
-            }
+            buttonSaveChanges.setText(isUpdating ? "Guardando..." : "Guardar Cambios");
         });
 
         viewModel.getIsUpdatingPassword().observe(getViewLifecycleOwner(), isUpdating -> {
             buttonSaveChanges.setEnabled(!isUpdating);
         });
 
-        // Observar mensajes
+        // Observar mensajes y limpiar campos tras operaciones exitosas
         viewModel.getMessage().observe(getViewLifecycleOwner(), message -> {
             if (message != null && !message.isEmpty()) {
                 Snackbar.make(requireView(), message, Snackbar.LENGTH_LONG).show();
                 viewModel.clearMessage();
 
-                // Limpiar campos de contraseña después de actualización exitosa
+                // Limpiar campos de contraseña tras cambio exitoso
                 if (message.contains("Contraseña actualizada")) {
                     clearPasswordFields();
                 }
@@ -140,37 +147,39 @@ public class UserProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Configura los listeners de los botones.
+     */
     private void setupListeners() {
-        // Botón guardar cambios
-        buttonSaveChanges.setOnClickListener(v -> {
-            saveChanges();
-        });
+        // Botón guardar cambios con validación
+        buttonSaveChanges.setOnClickListener(v -> saveChanges());
 
-        // Botón logout
+        // Botón logout con confirmación
         buttonLogout.setOnClickListener(v -> {
             new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                     .setTitle("Cerrar sesión")
                     .setMessage("¿Estás seguro de que quieres cerrar sesión?")
-                    .setPositiveButton("Cerrar sesión", (dialog, which) -> {
-                        viewModel.logout();
-                    })
+                    .setPositiveButton("Cerrar sesión", (dialog, which) -> viewModel.logout())
                     .setNegativeButton("Cancelar", null)
                     .show();
         });
     }
 
+    /**
+     * Valida y guarda los cambios del perfil.
+     */
     private void saveChanges() {
-        String newName = editTextName.getText().toString().trim();
-        String currentPassword = editTextCurrentPassword.getText().toString().trim();
-        String newPassword = editTextNewPassword.getText().toString().trim();
-        String confirmPassword = editTextConfirmPassword.getText().toString().trim();
+        String newName = Objects.requireNonNull(editTextName.getText()).toString().trim();
+        String currentPassword = Objects.requireNonNull(editTextCurrentPassword.getText()).toString().trim();
+        String newPassword = Objects.requireNonNull(editTextNewPassword.getText()).toString().trim();
+        String confirmPassword = Objects.requireNonNull(editTextConfirmPassword.getText()).toString().trim();
 
-        // Solo actualizar nombre si cambió
+        // Actualizar nombre si cambió
         if (!newName.isEmpty()) {
             viewModel.updateProfile(newName);
         }
 
-        // Solo cambiar contraseña si todos los campos están llenos
+        // Cambiar contraseña si todos los campos están completos
         if (!currentPassword.isEmpty() && !newPassword.isEmpty() && !confirmPassword.isEmpty()) {
             if (newPassword.length() < 6) {
                 Snackbar.make(requireView(), "La contraseña debe tener al menos 6 caracteres",
@@ -182,6 +191,9 @@ public class UserProfileFragment extends Fragment {
         }
     }
 
+    /**
+     * Limpia los campos de contraseña tras una operación exitosa.
+     */
     private void clearPasswordFields() {
         editTextCurrentPassword.setText("");
         editTextNewPassword.setText("");
@@ -191,7 +203,7 @@ public class UserProfileFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Limpiar referencias
+        // Prevenir memory leaks limpiando referencias
         textViewUserName = null;
         textViewUserEmail = null;
         editTextName = null;

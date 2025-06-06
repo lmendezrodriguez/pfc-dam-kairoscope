@@ -64,7 +64,7 @@
                 <ImageView
                     android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:contentDescription="Logo"
+                    android:contentDescription="@string/logo"
                     android:src="@drawable/formas_kai"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"

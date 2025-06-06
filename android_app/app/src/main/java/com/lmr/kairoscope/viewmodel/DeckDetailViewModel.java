@@ -15,29 +15,30 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * ViewModel for managing deck detail data and card drawing logic.
+ * ViewModel que gestiona el detalle de una baraja específica.
+ * Permite cargar información completa y extraer cartas aleatorias.
  */
 public class DeckDetailViewModel extends ViewModel {
 
     private final DeckRepository deckRepository;
     private final Random random = new Random();
 
-    // Estado de carga
+    // Estados de la UI
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
-
-    // Mensajes para la UI
     private final MutableLiveData<String> message = new MutableLiveData<>();
 
-    // Carta actualmente mostrada
+    // Datos de la baraja y carta actual
     private final MutableLiveData<Card> currentCard = new MutableLiveData<>();
-
-    // Deck actual
     private final MutableLiveData<Deck> currentDeck = new MutableLiveData<>();
 
+    /**
+     * Constructor que inicializa el ViewModel con el Repository.
+     * Configura observador para procesar respuestas del detalle de baraja.
+     */
     public DeckDetailViewModel(DeckRepository deckRepository) {
         this.deckRepository = deckRepository;
 
-        // Observar resultado de deck detail
+        // Observar resultado de carga del detalle
         this.deckRepository.getDeckDetailResult().observeForever(result -> {
             isLoading.postValue(false);
 
@@ -56,13 +57,17 @@ public class DeckDetailViewModel extends ViewModel {
     public LiveData<Deck> getCurrentDeck() { return currentDeck; }
     public LiveData<DeckDetailResponse> getDeckDetailResult() { return deckRepository.getDeckDetailResult(); }
 
-    // Método para cargar detalles de una baraja
+    /**
+     * Carga los detalles completos de una baraja desde el servidor.
+     */
     public void loadDeckDetail(int deckId) {
         isLoading.setValue(true);
         deckRepository.getDeckDetail(deckId);
     }
 
-    // Método para sacar una carta aleatoria
+    /**
+     * Extrae una carta aleatoria de la baraja actual.
+     */
     public void drawRandomCard() {
         Deck deck = currentDeck.getValue();
         if (deck != null && deck.getCards() != null && !deck.getCards().isEmpty()) {
@@ -75,12 +80,16 @@ public class DeckDetailViewModel extends ViewModel {
         }
     }
 
-    // Método para limpiar mensajes
+    /**
+     * Limpia el mensaje actual para evitar que se muestre nuevamente.
+     */
     public void clearMessage() {
         message.setValue(null);
     }
 
-    // Factory para crear el ViewModel
+    /**
+     * Factory para crear instancias del ViewModel con dependencias.
+     */
     public static class Factory extends ViewModelProvider.NewInstanceFactory {
         private final DeckRepository repository;
 
