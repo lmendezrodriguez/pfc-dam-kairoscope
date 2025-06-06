@@ -12,31 +12,36 @@ import com.lmr.kairoscope.data.model.DeckCreationRequest;
 import com.lmr.kairoscope.data.model.DeckResponse;
 import com.lmr.kairoscope.data.repository.DeckRepository;
 
+/**
+ * ViewModel que gestiona la creación de nuevas barajas de estrategias.
+ * Almacena los parámetros del usuario y coordina con el Repository.
+ */
 public class DeckCreationViewModel extends ViewModel {
 
     private static final String TAG = "DeckCreationViewModel";
     private final DeckRepository deckRepository;
 
-    // LiveData para almacenar los inputs del usuario
+    // Parámetros de entrada del usuario
     private final MutableLiveData<String> discipline = new MutableLiveData<>("");
     private final MutableLiveData<String> blockDescription = new MutableLiveData<>("");
-    private final MutableLiveData<String> selectedColor = new MutableLiveData<>("#31628D"); // Color primario por defecto
+    private final MutableLiveData<String> selectedColor = new MutableLiveData<>("#31628D");
 
-    // LiveData para el estado de carga
+    // Estados de la UI
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
-
-    // LiveData para mensajes (éxito/error)
     private final MutableLiveData<String> message = new MutableLiveData<>();
 
-    // Crear un LiveData para indicar navegación exitosa
+    // Navegación post-creación exitosa
     private final MutableLiveData<Integer> shouldNavigateToDeck = new MutableLiveData<>();
     public LiveData<Integer> getShouldNavigateToDeck() { return shouldNavigateToDeck; }
 
-    // Constructor
+    /**
+     * Constructor que inicializa el ViewModel con el Repository.
+     * Configura observador para procesar resultados de creación.
+     */
     public DeckCreationViewModel(DeckRepository deckRepository) {
         this.deckRepository = deckRepository;
 
-        // Observar el resultado de la creación
+        // Observar resultado de creación para navegación y feedback
         this.deckRepository.getDeckCreationResult().observeForever(result -> {
             isLoading.postValue(false);
 
@@ -48,7 +53,7 @@ public class DeckCreationViewModel extends ViewModel {
         });
     }
 
-    // Getters y setters para los LiveData
+    // Getters y setters para los parámetros de entrada
     public LiveData<String> getDiscipline() { return discipline; }
     public void setDiscipline(String value) { discipline.setValue(value); }
 
@@ -58,18 +63,23 @@ public class DeckCreationViewModel extends ViewModel {
     public LiveData<String> getSelectedColor() { return selectedColor; }
     public void setSelectedColor(String value) { selectedColor.setValue(value); }
 
+    // Getters para estados de la UI
     public LiveData<Boolean> getIsLoading() { return isLoading; }
     public LiveData<String> getMessage() { return message; }
     public LiveData<DeckResponse> getDeckCreationResult() { return deckRepository.getDeckCreationResult(); }
 
-    // Método para limpiar un mensaje una vez mostrado
+    /**
+     * Limpia el mensaje actual para evitar que se muestre nuevamente.
+     */
     public void clearMessage() {
         message.setValue(null);
     }
 
-    // Método para crear la baraja
+    /**
+     * Valida los campos y crea una nueva baraja si todo es correcto.
+     */
     public void createDeck() {
-        // Validar que los campos no estén vacíos
+        // Validar campos obligatorios
         if (discipline.getValue() == null || discipline.getValue().isEmpty()) {
             message.setValue("Por favor, ingresa una disciplina");
             return;
@@ -85,21 +95,21 @@ public class DeckCreationViewModel extends ViewModel {
             return;
         }
 
-        // Comenzar la carga
+        // Iniciar proceso de creación
         isLoading.setValue(true);
 
-        // Crear la solicitud
         DeckCreationRequest request = new DeckCreationRequest(
                 discipline.getValue(),
                 blockDescription.getValue(),
                 selectedColor.getValue()
         );
 
-        // Enviar la solicitud al repositorio
         deckRepository.createDeck(request);
     }
 
-    // Factory para crear el ViewModel
+    /**
+     * Factory para crear instancias del ViewModel con dependencias.
+     */
     public static class Factory extends ViewModelProvider.NewInstanceFactory {
         private final DeckRepository repository;
 

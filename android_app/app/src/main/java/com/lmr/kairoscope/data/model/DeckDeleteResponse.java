@@ -1,5 +1,9 @@
 package com.lmr.kairoscope.data.model;
 
+/**
+ * Modelo de respuesta para operaciones de eliminación de barajas.
+ * Contiene el estado y mensaje de confirmación del servidor.
+ */
 public class DeckDeleteResponse {
     private String status;
     private String message;
@@ -28,6 +32,9 @@ public class DeckDeleteResponse {
         this.message = message;
     }
 
+    /**
+     * Verifica si la operación de eliminación fue exitosa.
+     */
     public boolean isSuccess() {
         return "success".equals(status);
     }

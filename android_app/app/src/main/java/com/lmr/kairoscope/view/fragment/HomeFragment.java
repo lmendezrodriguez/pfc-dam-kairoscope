@@ -22,6 +22,10 @@ import com.lmr.kairoscope.data.repository.AuthRepository;
 import com.lmr.kairoscope.data.repository.DeckRepository;
 import com.lmr.kairoscope.viewmodel.HomeViewModel;
 
+/**
+ * Fragment principal que muestra un saludo personalizado y la última baraja creada.
+ * Permite acceso rápido al detalle de la baraja más reciente.
+ */
 public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
@@ -56,6 +60,9 @@ public class HomeFragment extends Fragment {
         viewModel.loadHomeData();
     }
 
+    /**
+     * Inicializa las referencias a los elementos de la UI.
+     */
     private void initViews(View view) {
         textViewUserName = view.findViewById(R.id.textViewUserName);
         textViewWelcome = view.findViewById(R.id.textViewWelcome);
@@ -67,6 +74,9 @@ public class HomeFragment extends Fragment {
         imageViewLogo = view.findViewById(R.id.imageViewLogo);
     }
 
+    /**
+     * Configura el ViewModel con sus dependencias.
+     */
     private void setupViewModel() {
         AuthRepository authRepository = new AuthRepository(requireContext());
         DeckRepository deckRepository = new DeckRepository(requireContext());
@@ -75,8 +85,11 @@ public class HomeFragment extends Fragment {
                 .get(HomeViewModel.class);
     }
 
+    /**
+     * Configura los observadores para actualizar la UI según los cambios del ViewModel.
+     */
     private void setupObservers() {
-        // Observar perfil del usuario para el saludo
+        // Observar perfil del usuario para personalizar el saludo
         viewModel.getCurrentUserProfile().observe(getViewLifecycleOwner(), userProfile -> {
             if (userProfile != null && userProfile.getDisplayName() != null) {
                 textViewUserName.setText("¡Hola, " + userProfile.getDisplayName() + "!");
@@ -98,28 +111,29 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // Observar última baraja
+        // Observar última baraja y alternar entre estados
         viewModel.getLatestDeck().observe(getViewLifecycleOwner(), deck -> {
             if (deck != null) {
-                // Mostrar carta con última baraja
                 showLatestDeck(deck);
             } else {
-                // Mostrar mensaje de bienvenida
                 showEmptyState();
             }
         });
     }
 
+    /**
+     * Muestra la información de la última baraja creada.
+     */
     private void showLatestDeck(com.lmr.kairoscope.data.model.Deck deck) {
         cardViewDeck.setVisibility(View.VISIBLE);
         textViewEmptyMessage.setVisibility(View.GONE);
-        textViewDeckName.setVisibility(View.VISIBLE);    // ← Añadir
-        textViewDiscipline.setVisibility(View.VISIBLE);  // ← Añadir
+        textViewDeckName.setVisibility(View.VISIBLE);
+        textViewDiscipline.setVisibility(View.VISIBLE);
 
         textViewDeckName.setText(deck.getName());
         textViewDiscipline.setText(deck.getDiscipline());
 
-        // Aplicar color de la baraja
+        // Aplicar color personalizado de la baraja
         try {
             int color = Color.parseColor(deck.getChosen_color());
             cardViewDeck.setCardBackgroundColor(color);
@@ -127,7 +141,7 @@ public class HomeFragment extends Fragment {
             cardViewDeck.setCardBackgroundColor(getResources().getColor(R.color.md_theme_primary));
         }
 
-        // ← AÑADIR: Click listener para navegar a detail
+        // Configurar navegación al detalle al hacer clic
         cardViewDeck.setOnClickListener(v -> {
             Bundle args = new Bundle();
             args.putInt("deck_id", deck.getId());
@@ -136,21 +150,24 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    /**
+     * Muestra el estado cuando no hay barajas disponibles.
+     */
     private void showEmptyState() {
         cardViewDeck.setVisibility(View.VISIBLE);
         textViewEmptyMessage.setVisibility(View.VISIBLE);
         textViewDeckName.setVisibility(View.GONE);
         textViewDiscipline.setVisibility(View.GONE);
-        imageViewLogo.setVisibility(View.GONE);  // ← Ocultar logo
+        imageViewLogo.setVisibility(View.GONE);
 
-        // Color por defecto
+        // Aplicar color por defecto
         cardViewDeck.setCardBackgroundColor(getResources().getColor(R.color.md_theme_primary));
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Limpiar referencias
+        // Prevenir memory leaks limpiando referencias
         textViewUserName = null;
         textViewWelcome = null;
         cardViewDeck = null;

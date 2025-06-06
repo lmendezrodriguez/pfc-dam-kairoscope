@@ -15,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.lmr.kairoscope.R;
@@ -24,14 +23,19 @@ import com.lmr.kairoscope.viewmodel.DeckDetailViewModel;
 
 import java.util.Random;
 
+/**
+ * Fragment que muestra los detalles de una baraja específica con animación de cartas.
+ * Implementa funcionalidad de flip para mostrar/ocultar el contenido de las cartas.
+ */
 public class DeckDetailFragment extends Fragment {
 
     private static final String TAG = "DeckDetailFragment";
+    // Claves para conservar estado durante rotaciones
     private static final String STATE_CARD_TEXT = "current_card_text";
     private static final String STATE_CARD_LOADED = "card_loaded";
     private static final String ARG_DECK_ID = "deck_id";
 
-    // UI Elements
+    // Referencias UI
     private TextView textViewDeckName;
     private TextView textViewDiscipline;
     private TextView textViewCardText;
@@ -40,13 +44,14 @@ public class DeckDetailFragment extends Fragment {
     private androidx.cardview.widget.CardView cardViewBack;
     private androidx.cardview.widget.CardView cardViewFront;
 
-    // ViewModel
     private DeckDetailViewModel viewModel;
 
-    // Data
     private int deckId;
     private boolean cardAlreadyLoaded = false;
 
+    /**
+     * Crea una nueva instancia del fragment con el ID de baraja especificado.
+     */
     public static DeckDetailFragment newInstance(int deckId) {
         DeckDetailFragment fragment = new DeckDetailFragment();
         Bundle args = new Bundle();
@@ -59,19 +64,17 @@ public class DeckDetailFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Priorizar savedInstanceState si existe
+        // Recuperar estado tras rotación o argumentos iniciales
         if (savedInstanceState != null) {
-            deckId = savedInstanceState.getInt("deck_id", -1); // ← USA EL MISMO NOMBRE
+            deckId = savedInstanceState.getInt("deck_id", -1);
             cardAlreadyLoaded = savedInstanceState.getBoolean(STATE_CARD_LOADED, false);
         }
-        // Si no hay savedInstanceState, usar argumentos
         else if (getArguments() != null) {
             deckId = getArguments().getInt(ARG_DECK_ID, -1);
         }
 
-        // Si aún no tenemos ID válido, hay problema
+        // Validar que tenemos un ID válido
         if (deckId == -1) {
-            // Volver atrás si no hay ID
             if (getActivity() != null) {
                 getActivity().onBackPressed();
             }
@@ -82,7 +85,7 @@ public class DeckDetailFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_deck_detail, container, false);
 
-        // Obtener referencias UI
+        // Inicializar referencias UI
         textViewDeckName = view.findViewById(R.id.textViewDeckName);
         textViewDiscipline = view.findViewById(R.id.textViewDiscipline);
         textViewCardText = view.findViewById(R.id.textViewCardText);
@@ -98,12 +101,12 @@ public class DeckDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Inicializar ViewModel
+        // Configurar ViewModel con repositorio
         DeckRepository repository = new DeckRepository(requireContext());
         viewModel = new ViewModelProvider(this, new DeckDetailViewModel.Factory(repository))
                 .get(DeckDetailViewModel.class);
 
-        // Restaurar carta si existe
+        // Restaurar texto de carta tras rotación
         if (savedInstanceState != null) {
             String cardText = savedInstanceState.getString(STATE_CARD_TEXT);
             if (cardText != null && textViewCardText != null) {
@@ -111,23 +114,23 @@ public class DeckDetailFragment extends Fragment {
             }
         }
 
-        // Configurar observadores
         setupObservers();
-
-        // Configurar listeners
         setupListeners();
 
-        // Cargar datos
+        // Cargar datos de la baraja
         viewModel.loadDeckDetail(deckId);
     }
 
+    /**
+     * Configura observers para reaccionar a cambios en el ViewModel.
+     */
     private void setupObservers() {
-        // Observar estado de carga
+        // Observer para el estado de carga
         viewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         });
 
-        // Observar mensajes
+        // Observer para mensajes de feedback al usuario
         viewModel.getMessage().observe(getViewLifecycleOwner(), message -> {
             if (message != null && !message.isEmpty()) {
                 Snackbar.make(requireView(), message, Snackbar.LENGTH_SHORT).show();
@@ -135,13 +138,13 @@ public class DeckDetailFragment extends Fragment {
             }
         });
 
-        // Observar deck actual
+        // Observer para datos de la baraja
         viewModel.getCurrentDeck().observe(getViewLifecycleOwner(), deck -> {
             if (deck != null) {
                 textViewDeckName.setText(deck.getName());
                 textViewDiscipline.setText(deck.getDiscipline());
 
-                // Aplicar color de la baraja si es válido
+                // Aplicar color personalizado de la baraja
                 try {
                     int color = Color.parseColor(deck.getChosen_color());
                     // Podrías aplicar el color a algún elemento visual
@@ -149,7 +152,7 @@ public class DeckDetailFragment extends Fragment {
                     Log.w(TAG, "Invalid color format: " + deck.getChosen_color());
                 }
 
-                // Solo sacar carta si no se había cargado antes (primera vez)
+                // Sacar primera carta solo si no se había cargado antes
                 if (!cardAlreadyLoaded) {
                     viewModel.drawRandomCard();
                     cardAlreadyLoaded = true;
@@ -157,12 +160,12 @@ public class DeckDetailFragment extends Fragment {
             }
         });
 
-        // Observar carta actual
+        // Observer para la carta actual
         viewModel.getCurrentCard().observe(getViewLifecycleOwner(), card -> {
             if (card != null) {
                 textViewCardText.setText(card.getText());
 
-                // Cambiar color del back aleatoriamente
+                // Asignar color aleatorio al reverso de la carta
                 TypedArray colors = getResources().obtainTypedArray(R.array.card_back_colors);
                 int randomIndex = new Random().nextInt(colors.length());
                 int randomColor = colors.getColor(randomIndex, getResources().getColor(R.color.md_theme_primary));
@@ -177,10 +180,16 @@ public class DeckDetailFragment extends Fragment {
         setupCardFlip();
     }
 
+    /**
+     * Configura el listener para la animación de flip de cartas.
+     */
     private void setupCardFlip() {
         cardContainer.setOnClickListener(v -> flipCard());
     }
 
+    /**
+     * Alterna entre mostrar el reverso y el contenido de la carta.
+     */
     private void flipCard() {
         if (cardViewBack.getVisibility() == View.VISIBLE) {
             // Voltear a frontal (mostrar carta)
@@ -191,6 +200,9 @@ public class DeckDetailFragment extends Fragment {
         }
     }
 
+    /**
+     * Anima la transición del reverso al contenido de la carta.
+     */
     private void flipToFront() {
         cardViewBack.animate()
                 .rotationY(90f)
@@ -207,6 +219,9 @@ public class DeckDetailFragment extends Fragment {
                 });
     }
 
+    /**
+     * Anima la transición al reverso y genera una nueva carta aleatoria.
+     */
     private void flipToBackAndNewCard() {
         cardViewFront.animate()
                 .rotationY(90f)
@@ -227,7 +242,8 @@ public class DeckDetailFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt("deck_id", deckId); // ← USA EL MISMO NOMBRE
+        // Conservar estado para rotaciones
+        outState.putInt("deck_id", deckId);
         outState.putBoolean(STATE_CARD_LOADED, cardAlreadyLoaded);
 
         if (textViewCardText != null) {
@@ -238,7 +254,7 @@ public class DeckDetailFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Limpiar referencias
+        // Evitar memory leaks limpiando referencias
         textViewDeckName = null;
         textViewDiscipline = null;
         textViewCardText = null;

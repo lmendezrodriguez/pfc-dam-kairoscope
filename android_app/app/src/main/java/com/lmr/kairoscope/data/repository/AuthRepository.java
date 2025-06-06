@@ -1,6 +1,3 @@
-// android_app/app/src/main/java/com/lmr/kairoscope/data/repository/AuthRepository.java
-// (Asegúrate de que el nombre del paquete arriba coincide con la ubicación real del archivo)
-
 package com.lmr.kairoscope.data.repository;
 
 import android.content.Context;
@@ -8,35 +5,32 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
 import com.google.firebase.auth.UserProfileChangeRequest;
+
 import com.lmr.kairoscope.data.model.UserProfile;
 import com.lmr.kairoscope.data.model.AuthResult;
 import com.lmr.kairoscope.util.NetworkUtils;
 
-// Clase responsable de interactuar con Firebase Authentication
+/**
+ * Repositorio responsable de gestionar la autenticación con Firebase.
+ * Proporciona métodos para login, registro, actualización de perfil y gestión de sesiones.
+ */
 public class AuthRepository {
     private final Context context;
     private final FirebaseAuth firebaseAuth;
 
-    // LiveData para comunicar el resultado de las operaciones de autenticación (login/registro)
-    // El ViewModel observará esto
+    // LiveData para comunicar estados de autenticación al ViewModel
     private final MutableLiveData<AuthResult> authResultLiveData = new MutableLiveData<>();
     private final MutableLiveData<UserProfile> currentUserProfileLiveData = new MutableLiveData<>();
-    // LiveData para comunicar si el usuario está autenticado actualmente
-    // El ViewModel (y quizás la Activity/otro Fragment) observará esto para manejar flujos
     private final MutableLiveData<Boolean> isAuthenticatedLiveData = new MutableLiveData<>();
 
-    // Constructor. Aquí obtenemos la instancia de FirebaseAuth.
     public AuthRepository(Context context) {
         this.context = context;
         this.firebaseAuth = FirebaseAuth.getInstance();
-        // Opcional: Verificar el estado de autenticación al crear el repositorio
         checkAuthenticationState();
     }
 
@@ -44,7 +38,6 @@ public class AuthRepository {
         return currentUserProfileLiveData;
     }
 
-    // Exponer los LiveData para que el ViewModel pueda observarlos (solo lectura)
     public LiveData<AuthResult> getAuthResultLiveData() {
         return authResultLiveData;
     }
@@ -53,44 +46,49 @@ public class AuthRepository {
         return isAuthenticatedLiveData;
     }
 
-    // Método para iniciar sesión con email y contraseña
+    /**
+     * Inicia sesión con email y contraseña verificando conectividad.
+     */
     public void login(String email, String password) {
-            // Verificar conexión AÑADIR
-            if (!NetworkUtils.isNetworkAvailable(context)) {
-                authResultLiveData.postValue(new AuthResult(false, "Sin conexión a internet"));
-                isAuthenticatedLiveData.postValue(false);
-                return;
-            }
+        if (!NetworkUtils.isNetworkAvailable(context)) {
+            authResultLiveData.postValue(new AuthResult(false, "Sin conexión a internet"));
+            isAuthenticatedLiveData.postValue(false);
+            return;
+        }
+
         firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
                         if (firebaseUser != null) {
-                            // Mapear FirebaseUser a tu UserProfile
-                            UserProfile userProfile = new UserProfile(firebaseUser.getUid(), firebaseUser.getDisplayName(), firebaseUser.getEmail());
+                            UserProfile userProfile = new UserProfile(
+                                    firebaseUser.getUid(),
+                                    firebaseUser.getDisplayName(),
+                                    firebaseUser.getEmail()
+                            );
                             currentUserProfileLiveData.postValue(userProfile);
                         } else {
-                            currentUserProfileLiveData.postValue(null); // Opcional: Si por alguna razón es null
+                            currentUserProfileLiveData.postValue(null);
                         }
                         authResultLiveData.postValue(new AuthResult(true, null));
                         isAuthenticatedLiveData.postValue(true);
                     } else {
-                        // AQUÍ ESTÁ LA CORRECCIÓN: Capturar el mensaje de error de Firebase
+                        // Capturar mensaje de error específico de Firebase
                         String errorMessage = "Error de autenticación";
                         if (task.getException() != null) {
-                            // Registrar el error en el logcat para depuración
                             Log.e("AuthRepository", "Login error: " + task.getException().getMessage());
                             errorMessage = task.getException().getMessage();
                         }
-                        // Enviar el mensaje de error al AuthResult
                         authResultLiveData.postValue(new AuthResult(false, errorMessage));
-                        currentUserProfileLiveData.postValue(null); // Usuario no autenticado, perfil es null
+                        currentUserProfileLiveData.postValue(null);
                         isAuthenticatedLiveData.postValue(false);
                     }
                 });
     }
 
-    // Método para registrar un nuevo usuario con email y contraseña
+    /**
+     * Registra un nuevo usuario y actualiza su perfil con el nombre proporcionado.
+     */
     public void register(String email, String password, String displayName) {
         if (!NetworkUtils.isNetworkAvailable(context)) {
             authResultLiveData.postValue(new AuthResult(false, "Sin conexión a internet"));
@@ -98,19 +96,19 @@ public class AuthRepository {
             isAuthenticatedLiveData.postValue(false);
             return;
         }
+
         firebaseAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
                         if (firebaseUser != null) {
-                            // Mapear FirebaseUser a tu UserProfile
+                            // Actualizar perfil con el nombre de usuario
                             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                                     .setDisplayName(displayName)
                                     .build();
 
                             firebaseUser.updateProfile(profileUpdates)
                                     .addOnCompleteListener(updateTask -> {
-                                        // Crear UserProfile con el nombre
                                         UserProfile userProfile = new UserProfile(
                                                 firebaseUser.getUid(),
                                                 displayName,
@@ -122,47 +120,54 @@ public class AuthRepository {
                                     });
                         }
                     } else {
-                        // AQUÍ ESTÁ LA CORRECCIÓN: Capturar el mensaje de error de Firebase
                         String errorMessage = "Error de registro";
                         if (task.getException() != null) {
-                            // Registrar el error en el logcat para depuración
                             Log.e("AuthRepository", "Register error: " + task.getException().getMessage());
                             errorMessage = task.getException().getMessage();
                         }
-                        // Enviar el mensaje de error al AuthResult
                         authResultLiveData.postValue(new AuthResult(false, errorMessage));
-                        currentUserProfileLiveData.postValue(null); // Usuario no autenticado si falla
+                        currentUserProfileLiveData.postValue(null);
                         isAuthenticatedLiveData.postValue(false);
                     }
                 });
     }
 
-    // Método para obtener el usuario actualmente logueado
     public FirebaseUser getCurrentUser() {
         return firebaseAuth.getCurrentUser();
     }
 
-    // Método para verificar el estado de autenticación y actualizar el LiveData
+    /**
+     * Verifica el estado actual de autenticación y actualiza los LiveData.
+     */
     public void checkAuthenticationState() {
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         boolean isAuthenticated = firebaseUser != null;
         isAuthenticatedLiveData.postValue(isAuthenticated);
 
         if (isAuthenticated) {
-            // Mapear FirebaseUser a tu UserProfile si hay usuario logueado
-            UserProfile userProfile = new UserProfile(firebaseUser.getUid(), firebaseUser.getDisplayName(), firebaseUser.getEmail());
+            UserProfile userProfile = new UserProfile(
+                    firebaseUser.getUid(),
+                    firebaseUser.getDisplayName(),
+                    firebaseUser.getEmail()
+            );
             currentUserProfileLiveData.postValue(userProfile);
         } else {
-            currentUserProfileLiveData.postValue(null); // No hay usuario, perfil es null
+            currentUserProfileLiveData.postValue(null);
         }
     }
 
-    // Método para cerrar sesión
+    /**
+     * Cierra la sesión del usuario actual.
+     */
     public void logout() {
         firebaseAuth.signOut();
-        isAuthenticatedLiveData.postValue(false); // El usuario ya no está autenticado
-        currentUserProfileLiveData.postValue(null); // El perfil del usuario ya no está disponible
+        isAuthenticatedLiveData.postValue(false);
+        currentUserProfileLiveData.postValue(null);
     }
+
+    /**
+     * Actualiza el nombre de usuario en Firebase y en el LiveData local.
+     */
     public void updateUserProfile(String newDisplayName) {
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user != null) {
@@ -173,7 +178,6 @@ public class AuthRepository {
             user.updateProfile(profileUpdates)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            // Actualizar el LiveData local
                             UserProfile updated = new UserProfile(user.getUid(), newDisplayName, user.getEmail());
                             currentUserProfileLiveData.postValue(updated);
                         }
@@ -181,16 +185,18 @@ public class AuthRepository {
         }
     }
 
+    /**
+     * Actualiza la contraseña del usuario requiriendo re-autenticación.
+     */
     public void updatePassword(String currentPassword, String newPassword, PasswordUpdateCallback callback) {
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user != null && user.getEmail() != null) {
-            // Re-autenticar primero
+            // Re-autenticar antes de cambiar contraseña
             AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
 
             user.reauthenticate(credential)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            // Cambiar contraseña
                             user.updatePassword(newPassword)
                                     .addOnCompleteListener(updateTask -> {
                                         callback.onResult(updateTask.isSuccessful(),
@@ -203,6 +209,9 @@ public class AuthRepository {
         }
     }
 
+    /**
+     * Interface para callbacks de actualización de contraseña.
+     */
     public interface PasswordUpdateCallback {
         void onResult(boolean success, String error);
     }

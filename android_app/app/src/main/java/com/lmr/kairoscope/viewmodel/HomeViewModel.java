@@ -13,37 +13,40 @@ import com.lmr.kairoscope.data.repository.AuthRepository;
 import com.lmr.kairoscope.data.repository.DeckRepository;
 
 /**
- * ViewModel for home screen showing user greeting and latest deck
+ * ViewModel para la pantalla principal que muestra saludo personalizado y última baraja.
+ * Combina datos de autenticación y barajas para crear la experiencia de inicio.
  */
 public class HomeViewModel extends ViewModel {
 
     private final AuthRepository authRepository;
     private final DeckRepository deckRepository;
 
-    // Estado de carga
+    // Estados de la UI
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
-
-    // Mensajes para la UI
     private final MutableLiveData<String> message = new MutableLiveData<>();
 
-    // Última baraja creada
+    // Datos principales
     private final MutableLiveData<Deck> latestDeck = new MutableLiveData<>();
 
+    /**
+     * Constructor que inicializa el ViewModel con ambos repositories.
+     * Configura observador para procesar lista de barajas y extraer la más reciente.
+     */
     public HomeViewModel(AuthRepository authRepository, DeckRepository deckRepository) {
         this.authRepository = authRepository;
         this.deckRepository = deckRepository;
 
-        // Observar resultado de la lista de barajas para obtener la última
+        // Observar lista de barajas para identificar la más reciente
         this.deckRepository.getDeckListResult().observeForever(result -> {
             isLoading.postValue(false);
 
             if (result != null && result.isSuccess()) {
                 if (result.getDecks() != null && !result.getDecks().isEmpty()) {
-                    // Obtener la última baraja (la más reciente)
-                    Deck latest = result.getDecks().get(result.getDecks().size() - 1);
+                    // Obtener la baraja más reciente (última en la lista ordenada por fecha)
+                    Deck latest = result.getDecks().get(0); // Asumiendo orden descendente por fecha
                     latestDeck.postValue(latest);
                 } else {
-                    latestDeck.postValue(null); // No hay barajas
+                    latestDeck.postValue(null); // Sin barajas disponibles
                 }
             } else {
                 message.postValue("Error al cargar las barajas");
@@ -59,18 +62,24 @@ public class HomeViewModel extends ViewModel {
     public LiveData<UserProfile> getCurrentUserProfile() { return authRepository.getCurrentUserProfileLiveData(); }
     public LiveData<DeckListResponse> getDeckListResult() { return deckRepository.getDeckListResult(); }
 
-    // Método para cargar datos iniciales
+    /**
+     * Carga los datos iniciales necesarios para la pantalla de inicio.
+     */
     public void loadHomeData() {
         isLoading.setValue(true);
         deckRepository.getDeckList();
     }
 
-    // Método para limpiar mensajes
+    /**
+     * Limpia el mensaje actual para evitar que se muestre nuevamente.
+     */
     public void clearMessage() {
         message.setValue(null);
     }
 
-    // Factory para crear el ViewModel
+    /**
+     * Factory para crear instancias del ViewModel con múltiples dependencias.
+     */
     public static class Factory extends ViewModelProvider.NewInstanceFactory {
         private final AuthRepository authRepository;
         private final DeckRepository deckRepository;

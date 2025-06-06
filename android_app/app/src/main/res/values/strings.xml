@@ -19,6 +19,36 @@
     <string name="repetir_contrase_a">Repetir contraseña</string>
     <string name="registrarse">Registrarse</string>
     <string name="ya_tengo_una_cuenta_iniciar_sesi_n">Ya tengo una cuenta. Iniciar sesión</string>
+    <string name="disciplina_o_campo_creativo">Disciplina o campo creativo</string>
+    <string name="qu_te_impide_avanzar_nelige_entre_0_y_5">¿Qué te impide avanzar? \nElige entre 0 y 5</string>
+    <string name="elige_un_color_que_represente_tu_estado_creativo">Elige un color que represente tu estado creativo</string>
+    <string name="generar_baraja">Generar Baraja</string>
+    <string name="logo">Logo</string>
+    <string name="no_tienes_barajas_a_n">No tienes barajas aún</string>
+    <string name="crea_tu_primera_baraja_de_estrategias">Crea tu primera baraja de estrategias</string>
+    <string name="hola">¡Hola!</string>
+    <string name="esto_es_kairoscope">Esto es kAIroscope</string>
+    <string name="desbloquea_tu_imaginaci_n_con_ideas_inesperadas_n_npulsa_para_comenzar">¡Desbloquea tu imaginación con ideas inesperadas!\n\nPulsa + para comenzar</string>
+    <string name="desbloqu_ate_con_kairoscope">Desbloquéate con kAIroscope</string>
+    <string name="contrase_a">Contraseña</string>
+    <string name="iniciar_sesi_n">Iniciar Sesión</string>
+    <string name="crear_una_cuenta">Crear una cuenta</string>
+    <string name="nete_a_kairoscope">¡Únete a kAIroscope!</string>
+    <string name="desbloquea_tu_imaginaci_n">Desbloquea tu imaginación</string>
+    <string name="gestiona_tu_cuenta_y_preferencias">Gestiona tu cuenta y preferencias</string>
+    <string name="avatar">Avatar</string>
+    <string name="nombre_completo">Nombre completo</string>
+    <string name="correo_electr_nico">Correo electrónico</string>
+    <string name="contrase_a_actual">Contraseña actual</string>
+    <string name="nueva_contrase_a">Nueva contraseña</string>
+    <string name="confirmar_nueva_contrase_a">Confirmar nueva contraseña</string>
+    <string name="guardar_cambios">Guardar Cambios</string>
+    <string name="cerrar_sesi_n">Cerrar Sesión</string>
+    <string name="sombras_verde_esmeralda">Sombras Verde Esmeralda</string>
+    <string name="eliminar_baraja">Eliminar baraja</string>
+    <string name="inicio">Inicio</string>
+    <string name="crear">Crear</string>
+    <string name="biblioteca">Biblioteca</string>
     <string-array name="creative_block_tags">
         <item>No sabes por dónde empezar</item>
         <item>Falta de inspiración</item>

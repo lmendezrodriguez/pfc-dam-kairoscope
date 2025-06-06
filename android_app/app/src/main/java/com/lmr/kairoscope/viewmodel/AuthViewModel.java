@@ -7,63 +7,51 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.annotation.NonNull;
 
-import com.lmr.kairoscope.data.model.AuthResult; // Importa tu clase AuthResult
-import com.lmr.kairoscope.data.model.UserProfile; // Importa tu clase UserProfile
-import com.lmr.kairoscope.data.repository.AuthRepository; // Importa tu Repository
+import com.lmr.kairoscope.data.model.AuthResult;
+import com.lmr.kairoscope.data.model.UserProfile;
+import com.lmr.kairoscope.data.repository.AuthRepository;
 
-// ViewModel para manejar la lógica de autenticación
+/**
+ * ViewModel que gestiona la lógica de autenticación y estado del usuario.
+ * Centraliza las operaciones de login, registro y logout usando el Repository.
+ */
 public class AuthViewModel extends ViewModel {
 
     private static final String TAG = "AuthViewModel";
     private final AuthRepository authRepository;
 
-    // LiveData que la UI observará
-    // Estado de carga (para ProgressBar)
+    // Estado de carga para mostrar indicadores visuales
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>();
     public LiveData<Boolean> getIsLoading() { return isLoading; }
 
-    // Estado de autenticación (si el usuario está logueado o no)
-    // Este LiveData viene directamente del Repository
+    // Estados expuestos directamente del Repository
     public LiveData<Boolean> isAuthenticated() { return authRepository.isAuthenticatedLiveData(); }
-
-    // Perfil del usuario autenticado (si existe)
-    // Este LiveData también viene directamente del Repository
     public LiveData<UserProfile> getCurrentUserProfile() { return authRepository.getCurrentUserProfileLiveData(); }
-
-    // Resultado de la última operación de autenticación (para manejo detallado si se necesita más que solo el estado general)
-    // También viene del Repository
     public LiveData<AuthResult> getAuthResult() { return authRepository.getAuthResultLiveData(); }
 
-    // *** NUEVO: LiveData para mensajes de UI (éxito o error) ***
-    // El ViewModel generará mensajes simples que la UI mostrará (ej: en un Snackbar)
+    // Mensajes para mostrar feedback al usuario
     private final MutableLiveData<String> message = new MutableLiveData<>();
     public LiveData<String> getMessage() { return message; }
 
-
-    // Constructor. Recibe el Repository.
+    /**
+     * Constructor que inicializa el ViewModel con el Repository.
+     * Configura observador para procesar resultados de autenticación.
+     */
     public AuthViewModel(AuthRepository authRepository) {
         this.authRepository = authRepository;
 
-        // Opcional pero útil: Observar el AuthResult del Repository para generar mensajes
-        // y actualizar el estado de carga aquí mismo en el ViewModel.
-        // Esto centraliza el manejo de los resultados del Repository.
+        // Observar resultados del Repository para generar mensajes y gestionar carga
         this.authRepository.getAuthResultLiveData().observeForever(result -> {
-            // NOTA: observeForever puede causar fugas de memoria si no se remueve.
-            // En un Fragmento, usarías observe(getViewLifecycleOwner(), ...).
-            // Aquí en el VM, es para procesar eventos del Repo que vive más tiempo.
-            // Un enfoque más robusto en VMs es usar Flows de Kotlin o SingleLiveEvent.
-            // Pero para empezar, esto funciona. Asegúrate de gestionar isLoading.
-
             if (result != null) {
-                // Importante: Primero detener la carga antes de procesar el resultado
                 Log.d(TAG, "AuthResult received: Success=" + result.isSuccess() + ", Error=" + result.getErrorMessage());
-                isLoading.postValue(false); // La operación terminó, detener la carga PRIMERO
 
-                // Procesar el resultado y postear un mensaje para la UI
+                // Detener carga al completarse la operación
+                isLoading.postValue(false);
+
+                // Generar mensaje apropiado para la UI
                 if (result.isSuccess()) {
-                    message.postValue("Operación exitosa."); // Mensaje genérico o específico
+                    message.postValue("Operación exitosa.");
                 } else {
-                    // Asegurarse de que el mensaje de error nunca sea null
                     String errorMsg = result.getErrorMessage();
                     if (errorMsg == null || errorMsg.isEmpty()) {
                         errorMsg = "Error de autenticación desconocido";
@@ -74,51 +62,54 @@ public class AuthViewModel extends ViewModel {
         });
     }
 
-    // Método público para iniciar sesión (llamado por el Fragmento de Login)
+    /**
+     * Inicia el proceso de login con email y contraseña.
+     */
     public void login(String email, String password) {
-        isLoading.setValue(true); // Indicar que la operación está en curso
-        // Llamar al Repository para realizar el login.
-        // El Repository gestionará la operación asíncrona y actualizará sus LiveData.
+        isLoading.setValue(true);
         authRepository.login(email, password);
-        // El observer de authResultLiveData (definido arriba) capturará el resultado y actualizará isLoading y message.
     }
 
-    // Método público para registrar (llamado por el Fragmento de Registro)
+    /**
+     * Inicia el proceso de registro con email, contraseña y nombre.
+     */
     public void register(String email, String password, String displayName) {
         isLoading.setValue(true);
         authRepository.register(email, password, displayName);
     }
 
-    // Método público para verificar el estado de autenticación al inicio (llamado por el Fragmento de Login/Splash)
+    /**
+     * Verifica el estado actual de autenticación del usuario.
+     */
     public void checkAuthenticationState() {
         authRepository.checkAuthenticationState();
-        // El Repository actualizará isAuthenticatedLiveData y currentUserProfileLiveData.
     }
 
-    // Método público para cerrar sesión
+    /**
+     * Cierra la sesión del usuario actual.
+     */
     public void logout() {
-        isLoading.setValue(true); // Opcional, puedes mostrar carga al cerrar sesión
+        isLoading.setValue(true);
         authRepository.logout();
-        // Repository actualizará LiveData. isAuthenticaded pasará a false, profile a null.
-        isLoading.postValue(false); // Cerrar sesión es generalmente rápido
+        isLoading.postValue(false); // Logout es operación rápida
     }
 
-    // Método para "consumir" el mensaje una vez mostrado por la UI
-    // Útil para evitar que el mensaje reaparezca en recreaciones de vista
+    /**
+     * Limpia el mensaje actual para evitar que se muestre nuevamente.
+     */
     public void clearMessage() {
         message.setValue(null);
     }
 
-    // Asegurarse de limpiar el observador cuando el ViewModel se destruya
     @Override
     protected void onCleared() {
         super.onCleared();
-        // Aquí podríamos remover el observeForever si fuera necesario
-        // (pero en este caso específico no tenemos una referencia al observer)
+        // Los observers se limpian automáticamente al destruirse el ViewModel
     }
 
-    // *** Factory para crear el ViewModel ***
-    // Necesitamos un Factory porque el ViewModel tiene un constructor con parámetros (AuthRepository)
+    /**
+     * Factory para crear instancias del ViewModel con dependencias.
+     */
     public static class Factory extends ViewModelProvider.NewInstanceFactory {
         private final AuthRepository repository;
 
@@ -130,10 +121,8 @@ public class AuthViewModel extends ViewModel {
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
             if (modelClass.isAssignableFrom(AuthViewModel.class)) {
-                // Si la clase solicitada es AuthViewModel, la creamos pasando el repository
                 return (T) new AuthViewModel(repository);
             }
-            // Si no es AuthViewModel, lanzamos una excepción (comportamiento estándar)
             throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
         }
     }

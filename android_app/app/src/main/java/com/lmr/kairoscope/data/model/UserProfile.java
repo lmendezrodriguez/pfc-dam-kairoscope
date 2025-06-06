@@ -1,5 +1,9 @@
 package com.lmr.kairoscope.data.model;
 
+/**
+ * Modelo que representa el perfil de usuario en la aplicación.
+ * Vincula los datos de Firebase Auth con la información local del usuario.
+ */
 public class UserProfile {
     private String firebaseUid;
     private String displayName;
@@ -11,11 +15,24 @@ public class UserProfile {
         this.email = email;
     }
 
-    // Getters y setters
-    public String getFirebaseUid() { return firebaseUid; }
-    public String getDisplayName() { return displayName; }
-    public String getEmail() { return email; }
+    // UID único de Firebase para identificar al usuario
+    public String getFirebaseUid() {
+        return firebaseUid;
+    }
 
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
-    public void setEmail(String email) { this.email = email; }
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

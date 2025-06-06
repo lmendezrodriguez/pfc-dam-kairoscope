@@ -1,4 +1,3 @@
-// android_app/app/src/main/java/com/lmr/kairoscope/data/model/DeckResponse.java
 package com.lmr.kairoscope.data.model;
 
 public class DeckResponse {
@@ -30,9 +29,20 @@ public class DeckResponse {
         private String user;
         private String created_at;
 
-        public int getId() { return id; }
-        public String getName() { return name; }
-        public String getUser() { return user; }
-        public String getCreatedAt() { return created_at; }
+        public int getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getUser() {
+            return user;
+        }
+
+        public String getCreatedAt() {
+            return created_at;
+        }
     }
 }

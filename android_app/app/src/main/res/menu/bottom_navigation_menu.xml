@@ -4,21 +4,21 @@
     <item
         android:id="@+id/homeFragment"
         android:icon="@drawable/baseline_home_filled_24"
-        android:title="Inicio" />
+        android:title="@string/inicio" />
 
     <item
         android:id="@+id/deckCreationFragment"
         android:icon="@drawable/ic_add"
-        android:title="Crear" />
+        android:title="@string/crear" />
 
     <item
         android:id="@+id/deckListFragment"
         android:icon="@drawable/baseline_library_books_24"
-        android:title="Biblioteca" />
+        android:title="@string/biblioteca" />
 
     <item
         android:id="@+id/userProfileFragment"
         android:icon="@drawable/ic_account_circle_24dp"
-        android:title="Perfil" />
+        android:title="@string/perfil" />
 
 </menu>

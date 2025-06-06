@@ -1,5 +1,9 @@
 package com.lmr.kairoscope.data.model;
 
+/**
+ * Modelo de datos para la solicitud de creación de una nueva baraja.
+ * Encapsula los parámetros necesarios para generar estrategias personalizadas.
+ */
 public class DeckCreationRequest {
     private String discipline;
     private String blockDescription;

@@ -1,7 +1,7 @@
 package com.lmr.kairoscope.data.model;
 
 /**
- * Represents a single strategy card within a deck.
+ * Representa una carta de estrategía oblicua.
  */
 public class Card {
     private int id;

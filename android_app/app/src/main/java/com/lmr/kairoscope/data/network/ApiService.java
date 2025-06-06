@@ -26,7 +26,7 @@ public interface ApiService {
     @GET("api/deck/")
     Call<DeckListResponse> getDeckList(@Header("Authorization") String authHeader);
 
-    // NUEVO: Endpoint para obtener detalles de una baraja específica
+    // Endpoint para obtener detalles de una baraja específica
     @GET("api/deck/{deckId}/")
     Call<DeckDetailResponse> getDeckDetail(@Path("deckId") int deckId, @Header("Authorization") String authHeader);
 

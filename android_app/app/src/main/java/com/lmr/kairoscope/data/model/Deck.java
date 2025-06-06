@@ -9,11 +9,11 @@ public class Deck {
     private int id;
     private String name;
     private String discipline;
-    private String block_description; // AÑADIR este campo que faltaba
+    private String block_description;
     private String chosen_color;
     private String created_at;
     private int card_count;
-    private List<Card> cards; // AÑADIR lista de cartas
+    private List<Card> cards;
 
     // Constructor vacío (requerido para Gson)
     public Deck() {}
@@ -44,8 +44,6 @@ public class Deck {
     public String getChosen_color() { return chosen_color; }
     public String getCreated_at() { return created_at; }
     public int getCard_count() { return card_count; }
-
-    // Getters nuevos
     public String getBlock_description() { return block_description; }
     public List<Card> getCards() { return cards; }
 
@@ -56,8 +54,6 @@ public class Deck {
     public void setChosen_color(String chosen_color) { this.chosen_color = chosen_color; }
     public void setCreated_at(String created_at) { this.created_at = created_at; }
     public void setCard_count(int card_count) { this.card_count = card_count; }
-
-    // Setters nuevos
     public void setBlock_description(String block_description) { this.block_description = block_description; }
     public void setCards(List<Card> cards) { this.cards = cards; }
 }

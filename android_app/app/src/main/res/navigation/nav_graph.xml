@@ -101,7 +101,8 @@
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>
-    <!-- Añadir acciones globales para bottom navigation -->
+
+    <!-- Acciones globales para bottom navigation -->
     <action
         android:id="@+id/action_global_deckListFragment"
         app:destination="@id/deckListFragment"
