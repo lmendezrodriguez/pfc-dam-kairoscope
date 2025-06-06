@@ -1,12 +1,13 @@
 # 🔮 kAIroscope
-
-<img src="https://raw.githubusercontent.com/lmendezrodriguez/pfc-dam-kairoscope/main/kairoscope%20rectangular.png" alt="kAIroscope Logo" width="400">
-
 ![Badge de estado](https://img.shields.io/badge/STATUS-EN%20DESARROLLO-green)
 ![Badge de licencia](https://img.shields.io/badge/license-MIT-blue)
 
-> *"Desbloquea tu imaginación"*  
-> Una reiterpretación de las Estrategias Oblicuas para la era de la IA
+<div align="center">
+<img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/kairoscope%20rectangular.png" alt="kAIroscope Logo" width="400">
+
+*"Desbloquea tu imaginación"*  
+Una reiterpretación de las Estrategias Oblicuas para la era de la IA
+</div>
 
 ## Índice
 - [Descripción del proyecto](#descripción-del-proyecto)
@@ -40,6 +41,14 @@ Funcionalidades principales implementadas y funcionales.
 - 🌙 `Experiencia premium`: Modo oscuro y tipografías personalizadas
 
 *"El azar te guía cuando la lógica te abandona"*
+
+<div align="center">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/login_con_datos.png" alt="Login" width="180">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/home_con_baraja.png" alt="Home" width="180">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/creacion_disciplina.png" alt="Creacion" width="180">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/biblioteca.png" alt="Biblioteca" width="180">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/carta_estrategia.png" alt="Carta" width="180">
+</div>
 
 ## Acceso al Proyecto
 **Para acceder al código fuente:**
@@ -110,11 +119,20 @@ La magia ocurre aquí: un sistema de **Recuperación Aumentada por Generación**
 - Prompt engineering especializado para mantener el carácter "oblicuo"
 - Generación personalizada según disciplina y bloqueo específico
 
+<div align="center">
+<img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/Captura%20de%20pantalla%202025-06-05%20125359.png" alt="RAG" width="800">
+</div>
+
 ## Personas desarrolladoras del proyecto
 | Lucía Méndez Rodríguez |
 | :---: |
 | *Filóloga outlier adentrándose en el mundo del desarrollo* |
 | *Estudiante DAM - Especializándose en IA aplicada* |
+
+<div align="center">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/carta_apai.png" alt="Carta" width="400">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/carta_apai_estrategia.png" alt="Estrategia" width="400">
+</div>
 
 > *"Este proyecto une mi pasión por la lengua y la literatura con mi curiosidad por la IA y el desarrollo, haciendo el determinismo de la programación un poco más indeterminado."*
 
