@@ -43,11 +43,14 @@ Funcionalidades principales implementadas y funcionales.
 *"El azar te guía cuando la lógica te abandona"*
 
 <div align="center">
-  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/login_con_datos.png" alt="Login" width="180">
-  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/home_con_baraja.png" alt="Home" width="180">
-  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/creacion_disciplina.png" alt="Creacion" width="180">
-  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/biblioteca.png" alt="Biblioteca" width="180">
-  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/carta_estrategia.png" alt="Carta" width="180">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/login_con_datos.png" alt="Login" width="200">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/home_con_baraja.png" alt="Home" width="200">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/creacion_disciplina.png" alt="Creacion" width="200">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/biblioteca.png" alt="Biblioteca" width="200">
+</div>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/lmendezrodriguez/pfc-dam-kairoscope/refs/heads/main/img/baraja.png" alt="Reverso" width="200">
+  <img src="https://github.com/lmendezrodriguez/pfc-dam-kairoscope/blob/main/img/carta_estrategia.png" alt="Carta" width="200">
 </div>
 
 ## Acceso al Proyecto
